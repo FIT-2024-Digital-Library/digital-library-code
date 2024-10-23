@@ -13,7 +13,7 @@
 
 ```bash
 # Enter into the project directory
-cd recall-back
+cd digital-library-code
 
 # To create a virtual environment, you can use the venv module that comes with Python
 python -m venv .venv
@@ -30,7 +30,7 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 # Run the service
-fastapi dev app/main.py
+fastapi dev main.py
 ```
 
 ## Project description
