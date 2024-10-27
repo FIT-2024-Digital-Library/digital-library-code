@@ -11,7 +11,13 @@ router = APIRouter(
 @router.get('/profile', response_class=HTMLResponse, summary='Returns user page')
 async def get_profile(request: Request):
     raise NotImplemented
-    # Здесь будет куча логики по поиску
+    return templates.TemplateResponse(
+        request=request, name='basic.html'
+    )
+
+@router.get('/login', response_class=HTMLResponse, summary='Responds login page')
+async def login(request: Request):
+    raise NotImplemented
     return templates.TemplateResponse(
         request=request, name='basic.html'
     )
@@ -20,6 +26,13 @@ async def get_profile(request: Request):
 async def login(request: Request):
     raise NotImplemented
     return RedirectResponse('/')
+
+@router.get('/register', response_class=HTMLResponse, summary='Responds registration page')
+async def register(request: Request):
+    raise NotImplemented
+    return templates.TemplateResponse(
+        request=request, name='basic.html'
+    )
 
 @router.post('/register', response_class=RedirectResponse, summary='Creates new user')
 async def register(request: Request):
