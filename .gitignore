@@ -1,3 +1,5 @@
+export_db_env.sh
+
 # Byte-compiled / optimized / DLL files
 *__pycache__
 *.py[cod]
