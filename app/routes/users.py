@@ -1,7 +1,5 @@
 from fastapi import APIRouter
 
-from app.templates_processor import templates
-
 router = APIRouter(
     prefix='/users',
     tags=['user']
