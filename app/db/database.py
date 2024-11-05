@@ -1,14 +1,20 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 from .models import db_metadata, user_table, author_table, genre_table, book_table
 from os import getenv
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-LOGIN = getenv('POSTGRES_LOGIN')
-PASSWORD = getenv('POSTGRES_PASSWORD')
-HOST = getenv('POSTGRES_HOSTNAME')
-DB_NAME = getenv('POSTGRES_DB_NAME')
+class PostgresSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='POSTGRES_', validate_default=False)
+    login: str
+    password: str
+    hostname: str
+    db_name: str
+
+pg_cred = PostgresSettings()
 
 db_engine = create_async_engine(
-    f"postgresql+asyncpg://{LOGIN}:{PASSWORD}@{HOST}/{DB_NAME}", echo=True
+    f"postgresql+asyncpg://{pg_cred.login}:{pg_cred.password}@{pg_cred.hostname}/{pg_cred.db_name}", echo=True
 )
 
 async def insert_test_data(connection: AsyncConnection):
