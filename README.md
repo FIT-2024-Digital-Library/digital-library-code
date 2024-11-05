@@ -26,15 +26,18 @@ python -m pip install --upgrade pip
 # Install packages from requirements.txt
 pip install -r requirements.txt
 ```
-2. Install PostgreSQL, create database `digital-library` hosted on  `localhost:5432` and execute:
+2. Install PostgreSQL and add its credentials as environment vars:
+```conf
+POSTGRES_HOSTNAME=localhost:5432
+POSTGRES_DB_NAME=digital-library
+POSTGRES_LOGIN=backend
+POSTGRES_PASSWORD="t0p_s3cret!"
+```
+3. To create tables in DB, run:
 ```bash
-# Set postgresql credentials as environment variables (note that they will be discarded after logging out so you would like to add them into your bash-start script)
-export POSTGRES_LOGIN=...
-export POSTGRES_PASSWORD=...
-
 python create_tables.py
 ```
-3. Run service:
+4. Run service:
 ```bash
 fastapi dev main.py
 ```
