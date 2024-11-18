@@ -1,9 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select, insert
 
-from app.db.models import *
+
 from app.db.database import async_session_maker
-from app.schemas.users import *
+from app.db.models import user_table
+from app.schemas.users import UserRegister
+
 from app.users.auth import get_password_hash
 
 router = APIRouter(

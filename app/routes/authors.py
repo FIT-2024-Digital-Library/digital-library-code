@@ -1,11 +1,15 @@
 from typing import Optional, List
 
+import sqlalchemy
 from fastapi import APIRouter, Query, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, MappingResult
 
-from app.schemas import *
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
-from app.db.database import *
+
+from app.crud.authors import get_author_from_db, get_authors_from_db
+from app.db.database import async_session_maker
+from app.db.models import author_table
+from app.schemas import Author
 
 router = APIRouter(
     prefix='/authors',
@@ -15,22 +19,15 @@ router = APIRouter(
 
 @router.get('/{id}', response_model=Author, summary='Returns Authors Data')
 async def get_author(id: int):
-    async with async_session_maker() as session:
-        query = select(author_table).where(author_table.c.id == id)
-        result = await session.execute(query)
-        result = result.first()
-
-        if result is None:
-            raise HTTPException(status_code=404, detail="Author not found")
-        return Author(**result._mapping)
+    author = await get_author_from_db(id)
+    if author is None:
+        raise HTTPException(status_code=404, detail="Author not found")
+    return author
 
 
 @router.get('/', response_model=List[Author], summary='Returns Authors Data')
-async def get_author():
-    async with async_session_maker() as session:
-        query = select(author_table)
-        result = await session.execute(query)
-        authors = result.all()
-        if not authors:
-            raise HTTPException(status_code=404, detail="No author found matching the criteria")
-        return [Author(**author._mapping) for author in authors]
+async def get_authors():
+    authors = await get_authors_from_db()
+    if len(authors) == 0:
+        raise HTTPException(status_code=404, detail="No authors in db")
+    return authors

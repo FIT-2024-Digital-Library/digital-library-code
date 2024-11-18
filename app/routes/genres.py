@@ -1,11 +1,9 @@
-from typing import Optional, List
+from typing import List
 
-from fastapi import APIRouter, Query, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, HTTPException
 
-from app.schemas import *
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
-from app.db.database import *
+from app.crud.genres import get_genre_from_db, get_genres_from_db
+from app.schemas import Genre
 
 router = APIRouter(
     prefix='/genres',
@@ -13,23 +11,17 @@ router = APIRouter(
 )
 
 
-@router.get('/{id}', response_model=Genre, summary='Returns Genres Data')
+@router.get('/{id}', response_model=Genre, summary='Returns genres data')
 async def get_genre(id: int):
-    async with async_session_maker() as session:
-        query = select(genre_table).where(genre_table.c.id == id)
-        result = await session.execute(query)
-        result = result.first()
-        if result is None:
-            raise HTTPException(status_code=404, detail="Genre not found")
-        return Genre(**result._mapping)
+    genre = await get_genre_from_db(id)
+    if genre is None:
+        raise HTTPException(status_code=404, detail="Genre not found")
+    return genre
 
 
-@router.get('/', response_model=List[Genre], summary='Returns Genres Data')
-async def get_genre():
-    async with async_session_maker() as session:
-        query = select(author_table)
-        result = await session.execute(query)
-        genres = result.all()
-        if not genres:
-            raise HTTPException(status_code=404, detail="No genres found matching the criteria")
-        return [Genre(**genre._mapping) for genre in genres]
+@router.get('/', response_model=List[Genre], summary='Returns genres')
+async def get_genres():
+    genres = await get_genres_from_db()
+    if len(genres) == 0:
+        raise HTTPException(status_code=404, detail="No genres in db")
+    return genres
