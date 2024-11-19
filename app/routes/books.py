@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Optional, List
 
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, Depends
 from sqlalchemy import select, MappingResult
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
@@ -10,6 +10,8 @@ from app.crud.books import get_books_from_db, get_book_from_db
 from app.db.database import async_session_maker
 from app.db.models import book_table, author_table, genre_table
 from app.schemas import Book
+from app.schemas.users import User
+from app.users.dependencies import get_current_admin_user
 
 router = APIRouter(
     prefix='/books',
@@ -28,8 +30,6 @@ async def get_books(
         pdf_url: Optional[str] = Query(None, description="Filter by PDF URL")
 ):
     books = await get_books_from_db(id, title, author, genre, published_date, description, pdf_url)
-    if len(books) == 0:
-        raise HTTPException(status_code=404, detail="No books found matching the criteria")
     return books
 
 
@@ -42,14 +42,14 @@ async def get_book(id: int):
 
 
 @router.post('/create', response_model=None, summary='Creates new book. Only for authorized user with admin previlegy')
-async def create_book():
+async def create_book(user_data: User = Depends(get_current_admin_user)):
     raise NotImplemented
     return {}  # Here will be pydantic scheme's object
 
 
 @router.put('/{id}/update', response_model=None,
             summary='Updates book data. Only for authorized user with admin previlegy')
-async def update_book(id: int):
+async def update_book(id: int, user_data: User = Depends(get_current_admin_user)):
     raise NotImplemented
     return {}  # Here will be pydantic scheme's object
 

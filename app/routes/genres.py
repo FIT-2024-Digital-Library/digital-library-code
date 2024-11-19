@@ -13,7 +13,15 @@ router = APIRouter(
 
 @router.get('/{id}', response_model=Genre, summary='Returns genres data')
 async def get_genre(id: int):
-    genre = await get_genre_from_db(id)
+    genre = await get_genre_from_db(id=id)
+    if genre is None:
+        raise HTTPException(status_code=404, detail="Genre not found")
+    return genre
+
+
+@router.get('/{name}', response_model=Genre, summary='Returns genres data')
+async def get_genre(name: str):
+    genre = await get_genre_from_db(name=name)
     if genre is None:
         raise HTTPException(status_code=404, detail="Genre not found")
     return genre
@@ -22,6 +30,4 @@ async def get_genre(id: int):
 @router.get('/', response_model=List[Genre], summary='Returns genres')
 async def get_genres():
     genres = await get_genres_from_db()
-    if len(genres) == 0:
-        raise HTTPException(status_code=404, detail="No genres in db")
     return genres
