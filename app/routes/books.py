@@ -6,12 +6,12 @@ from sqlalchemy import select, MappingResult
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 
-from app.crud.books import get_books_from_db, get_book_from_db
+from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db
 from app.db.database import async_session_maker
 from app.db.models import book_table, author_table, genre_table
-from app.schemas import Book
+from app.schemas import Book, CreateBook
 from app.schemas.users import User
-from app.users.dependencies import get_current_admin_user
+from app.users.dependencies import get_current_admin_user, get_current_user
 
 router = APIRouter(
     prefix='/books',
@@ -42,9 +42,9 @@ async def get_book(id: int):
 
 
 @router.post('/create', response_model=None, summary='Creates new book. Only for authorized user with admin previlegy')
-async def create_book(user_data: User = Depends(get_current_admin_user)):
-    raise NotImplemented
-    return {}  # Here will be pydantic scheme's object
+async def create_book(book: CreateBook, user_data: User = Depends(get_current_user)):
+    id = await create_book_in_db(book)
+    return id
 
 
 @router.put('/{id}/update', response_model=None,

@@ -1,11 +1,14 @@
 from datetime import date
 
-from fastapi import HTTPException
-from sqlalchemy import select
+from fastapi import HTTPException, Depends
+from sqlalchemy import select, insert
 
-from app.crud.authors import get_author_from_db_by_name
+from app.crud.authors import get_existent_or_create_author_in_db, get_author_from_db
+from app.crud.genres import get_genre_from_db, create_genre_in_db, get_existent_or_create_genre_in_db
 from app.db.database import async_session_maker
 from app.db.models import book_table, author_table, genre_table
+from app.schemas import CreateBook, GenreCreate, AuthorCreate
+from app.users.dependencies import get_current_user
 
 
 async def get_books_from_db(id: int = None,
@@ -22,7 +25,7 @@ async def get_books_from_db(id: int = None,
         if title is not None:
             query = query.where(book_table.c.title.ilike(f"%{title}%"))
         if author is not None:
-            author_id = await get_author_from_db_by_name(author)
+            author_id = await get_author_from_db(name=author)
             query = query.where(book_table.c.author == author_id)
         if genre is not None:
             genre_id = await session.execute(select(genre_table.c.id).where(genre_table.c.name == genre))
@@ -44,4 +47,21 @@ async def get_book_from_db(id: int):
     async with async_session_maker() as session:
         query = select(book_table).where(book_table.c.id == id)
         result = await session.execute(query)
-        return result.mappings().first()
+        return result.scalar()
+
+
+async def create_book_in_db(book: CreateBook, user_data=Depends(get_current_user)):
+    async with async_session_maker() as session:
+        book_dict = book.model_dump()
+        genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
+        genre_id = await get_existent_or_create_genre_in_db(genre_creation_model)
+        book_dict['genre'] = genre_id
+
+        author_creation_model = AuthorCreate(**{'name': book_dict['author']})
+        author_id = await get_existent_or_create_author_in_db(author_creation_model)
+        book_dict['author'] = author_id
+
+        query = insert(book_table).values(**book_dict)
+        result = await session.execute(query)
+        await session.commit()
+        return result.inserted_primary_key[0]

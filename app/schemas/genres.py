@@ -7,3 +7,6 @@ class Genre(BaseModel):
     id: int
     name: str
 
+
+class GenreCreate(BaseModel):
+    name: str

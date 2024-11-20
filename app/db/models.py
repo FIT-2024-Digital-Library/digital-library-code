@@ -12,7 +12,7 @@ user_table = Table(
     Column("email", String),
     Column("name", String(30)),
     Column("password_hash", String(512)),
-    Column("privileges", privileges_enum, default="basic") # TODO: по хорошему надо будет заменить на группы
+    Column("privileges", privileges_enum, default="basic")  # TODO: по хорошему надо будет заменить на группы
 )
 
 author_table = Table(

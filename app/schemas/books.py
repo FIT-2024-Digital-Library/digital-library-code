@@ -13,3 +13,13 @@ class Book(BaseModel):
     description: Optional[str] = None
     image: Optional[str] = None
     pdf_url: str
+
+
+class CreateBook(BaseModel):
+    title: str
+    author: str
+    genre: Optional[str] = None
+    published_date: Optional[date] = None
+    description: Optional[str] = None
+    image: Optional[str] = None
+    pdf_url: str
