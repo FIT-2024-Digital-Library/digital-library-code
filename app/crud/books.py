@@ -28,8 +28,7 @@ async def get_books_from_db(id: int = None,
             author_id = await get_author_from_db(name=author)
             query = query.where(book_table.c.author == author_id)
         if genre is not None:
-            genre_id = await session.execute(select(genre_table.c.id).where(genre_table.c.name == genre))
-            genre_id = genre_id.scalar()
+            genre_id = get_genre_from_db(name=genre)
             query = query.where(book_table.c.name == genre_id)
         if published_date is not None:
             query = query.where(book_table.c.published_date == published_date)
