@@ -6,7 +6,8 @@ from sqlalchemy import select, MappingResult
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 
-from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db
+from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, update_book_in_db, \
+    delete_book_from_db
 from app.db.database import async_session_maker
 from app.db.models import book_table, author_table, genre_table
 from app.schemas import Book, CreateBook
@@ -41,21 +42,25 @@ async def get_book(id: int):
     return result
 
 
-@router.post('/create', response_model=None, summary='Creates new book. Only for authorized user with admin previlegy')
+@router.post('/create', response_model=int, summary='Creates new book. Only for authorized user with admin previlegy')
 async def create_book(book: CreateBook, user_data: User = Depends(get_current_user)):
     id = await create_book_in_db(book)
     return id
 
 
-@router.put('/{id}/update', response_model=None,
+@router.put('/{id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin previlegy')
-async def update_book(id: int, user_data: User = Depends(get_current_admin_user)):
-    raise NotImplemented
-    return {}  # Here will be pydantic scheme's object
+async def update_book(id: int, book: CreateBook, user_data: User = Depends(get_current_user)):
+    book = await update_book_in_db(id, book)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book
 
 
-@router.delete('/{id}/delete', response_model=None,
+@router.delete('/{id}/delete', response_model=Book,
                summary='Deletes book. Only for authorized user with admin previlegy')
-async def delete_book(id: int):
-    raise NotImplemented
-    return {}  # Here will be OK empty response
+async def delete_book(id: int, user_data: User = Depends(get_current_user)):
+    book = await delete_book_from_db(id)
+    if book is None:
+        raise HTTPException(status_code=404, detail="Book not found")
+    return book

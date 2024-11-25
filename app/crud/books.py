@@ -1,7 +1,7 @@
 from datetime import date
 
 from fastapi import HTTPException, Depends
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, update, delete
 
 from app.crud.authors import get_existent_or_create_author_in_db, get_author_from_db
 from app.crud.genres import get_genre_from_db, create_genre_in_db, get_existent_or_create_genre_in_db
@@ -47,10 +47,10 @@ async def get_book_from_db(id: int):
     async with async_session_maker() as session:
         query = select(book_table).where(book_table.c.id == id)
         result = await session.execute(query)
-        return result.scalar()
+        return result.mappings().first()
 
 
-async def create_book_in_db(book: CreateBook, user_data=Depends(get_current_user)):
+async def create_book_in_db(book: CreateBook):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
         genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
@@ -65,3 +65,31 @@ async def create_book_in_db(book: CreateBook, user_data=Depends(get_current_user
         result = await session.execute(query)
         await session.commit()
         return result.inserted_primary_key[0]
+
+
+async def update_book_in_db(id: int, book: CreateBook):
+    async with async_session_maker() as session:
+        book_dict = book.model_dump()
+        genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
+        genre_id = await get_existent_or_create_genre_in_db(genre_creation_model)
+        book_dict['genre'] = genre_id
+
+        author_creation_model = AuthorCreate(**{'name': book_dict['author']})
+        author_id = await get_existent_or_create_author_in_db(author_creation_model)
+        book_dict['author'] = author_id
+
+        query = update(book_table).where(book_table.c.id == id).values(**book_dict)
+        result = await session.execute(query)
+        await session.commit()
+        book = await get_book_from_db(id)
+        return book
+
+
+async def delete_book_from_db(id: int):
+    async with async_session_maker() as session:
+        book = await get_book_from_db(id)
+        if book:
+            query = delete(book_table).where(book_table.c.id == id)
+            await session.execute(query)
+            await session.commit()
+        return book
