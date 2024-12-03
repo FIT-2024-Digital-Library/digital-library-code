@@ -19,3 +19,9 @@ class User(BaseModel):
     email: EmailStr = Field(..., description="Электронная почта")
     name: str = Field(..., min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
     privileges: str
+
+
+class UserLogined(BaseModel):
+    email: EmailStr = Field(..., description="Электронная почта")
+    name: str = Field(..., min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
+    privileges: str

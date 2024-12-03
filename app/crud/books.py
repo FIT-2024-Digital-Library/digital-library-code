@@ -92,3 +92,5 @@ async def delete_book_from_db(id: int):
             await session.execute(query)
             await session.commit()
         return book
+
+

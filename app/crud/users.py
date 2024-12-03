@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from pydantic import EmailStr
-from sqlalchemy import select, insert
+from sqlalchemy import select, insert, RowMapping, delete, update
 
 from app.db.database import async_session_maker
 from app.db.models import user_table
@@ -23,12 +23,15 @@ async def register_user(user_data: UserRegister):
         query = insert(user_table).values(**user_dict)
         result = await session.execute(query)
         await session.commit()
-        return result.inserted_primary_key[0]
+        if result.inserted_primary_key:
+            user_dict.pop("password_hash")
+            return user_dict
 
 
 async def login_user(user_data: UserLogin):
     async with async_session_maker() as session:
-        query = select(user_table).where(user_table.c.email == user_data.email)
+        query = select(user_table).where(
+            user_table.c.email == user_data.email)
         result = await session.execute(query)
         user = result.mappings().first()
         if not user or verify_password(plain_password=user_data.password,
@@ -49,3 +52,31 @@ async def find_user_by_id(id: int):
         result = await session.execute(query)
         user = result.mappings().first()
         return user
+
+
+async def delete_user_from_db(id: int):
+    async with async_session_maker() as session:
+        user = await find_user_by_id(id)
+        if user:
+            query = delete(user_table).where(user_table.c.id == id)
+            await session.execute(query)
+            await session.commit()
+        return user
+
+
+async def update_user_in_db(id: int, user_data: UserRegister):
+    async with async_session_maker() as session:
+        user = await find_user_by_id(id)
+        if user:
+            raise HTTPException(status_code=403, detail="User doesn't exist")
+        user_dict = user_data.model_dump()
+
+        user_dict["password_hash"] = get_password_hash(user_data.password)
+        user_dict['privileges'] = "basic"
+        user_dict.pop("password")
+        query = update(user_table).where(user_table.c.id == id).values(**user_dict)
+        result = await session.execute(query)
+        await session.commit()
+        if result.inserted_primary_key:
+            user_dict.pop("password_hash")
+            return user_dict
