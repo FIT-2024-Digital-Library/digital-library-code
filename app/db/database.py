@@ -8,13 +8,14 @@ class PostgresSettings(BaseSettings):
     login: str
     password: str
     hostname: str
+    port: int
     db: str
 
 
 pg_cred = PostgresSettings()
 
 db_engine = create_async_engine(
-    f"postgresql+asyncpg://{pg_cred.login}:{pg_cred.password}@{pg_cred.hostname}/{pg_cred.db}", echo=True
+    f"postgresql+asyncpg://{pg_cred.login}:{pg_cred.password}@{pg_cred.hostname}:{pg_cred.port}/{pg_cred.db}", echo=True
 )
 async_session_maker = async_sessionmaker(db_engine, expire_on_commit=False)
 
