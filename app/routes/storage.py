@@ -7,8 +7,8 @@ from app.storage.config import minio_client, minio_cred
 
 
 router = APIRouter(
-    prefix='/books',
-    tags=['book']
+    prefix='/storage',
+    tags=['storage']
 )
 
 
