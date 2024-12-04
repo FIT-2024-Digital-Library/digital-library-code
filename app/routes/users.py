@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.get('/profile', response_model=None, summary='Returns authorized user')
+@router.get('/profile', response_model=UserLogined, summary='Returns authorized user')
 async def get_profile(user_data: User = Depends(get_current_user)):
     return user_data
 

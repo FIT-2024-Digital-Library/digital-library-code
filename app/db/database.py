@@ -22,7 +22,6 @@ db_engine = create_async_engine(
 async_session_maker = async_sessionmaker(db_engine, expire_on_commit=False)
 
 
-
 async def insert_test_data(connection: AsyncConnection):
     await connection.execute(user_table.insert().values(
         name='Kirill', email='Kirill@pochta.ru', password_hash='abc', privileges='admin'

@@ -34,7 +34,7 @@ async def get_books(
     return books
 
 
-@router.get('/{id}', response_model=Book, summary='Returns book data')
+@router.get('/{author_id}', response_model=Book, summary='Returns book data')
 async def get_book(id: int):
     result = await get_book_from_db(id)
     if result is None:
@@ -48,7 +48,7 @@ async def create_book(book: CreateBook, user_data: User = Depends(get_current_us
     return id
 
 
-@router.put('/{id}/update', response_model=Book,
+@router.put('/{author_id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin previlegy')
 async def update_book(id: int, book: CreateBook, user_data: User = Depends(get_current_user)):
     book = await update_book_in_db(id, book)
@@ -57,7 +57,7 @@ async def update_book(id: int, book: CreateBook, user_data: User = Depends(get_c
     return book
 
 
-@router.delete('/{id}/delete', response_model=Book,
+@router.delete('/{author_id}/delete', response_model=Book,
                summary='Deletes book. Only for authorized user with admin previlegy')
 async def delete_book(id: int, user_data: User = Depends(get_current_user)):
     book = await delete_book_from_db(id)
