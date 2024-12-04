@@ -14,7 +14,7 @@ class MinioSettings(BaseSettings):
     @property
     def minio_url(self) -> str:
         """Hostname with port"""
-        return f"{self.minio.HOSTNAME}:{self.minio.PORT}"
+        return f"{self.HOSTNAME}:{self.PORT}"
 
 
 minio_cred = MinioSettings()
