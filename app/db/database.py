@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class PostgresSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env")
-    login: str
+    user: str
     password: str
     hostname: str
     port: int
