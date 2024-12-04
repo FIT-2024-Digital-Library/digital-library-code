@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import asyncpg
 from fastapi import APIRouter, HTTPException, Depends, Query
 
 from app.crud.genres import get_genre_from_db, get_genres_from_db, create_genre_in_db, delete_genre_from_db, \

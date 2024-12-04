@@ -1,6 +1,0 @@
-secret_key = "key"
-algorithm = "HS256"
-postgres_login = 'login'
-postgres_password = 'passwd'
-postgres_hostname = 'hostname'
-g

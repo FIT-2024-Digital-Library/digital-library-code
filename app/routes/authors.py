@@ -1,6 +1,5 @@
 from typing import List, Optional
 
-import asyncpg
 from fastapi import APIRouter, HTTPException, Depends, Query
 
 from app.crud.authors import get_author_from_db, get_authors_from_db, create_author_in_db, delete_author_from_db, \

@@ -1,0 +1,64 @@
+services:
+  minio-setup:
+    container_name: minio-setup
+    depends_on:
+      minio:
+        condition: service_healthy
+        restart: true
+    image: minio/mc:latest
+    env_file:
+      - $RECALL_PROJECT_PATH/config/minio-server.env
+      - $RECALL_PROJECT_PATH/config/minio-backend.env
+    environment:
+      - "MINIO_SERVER_HOSTNAME=http://minio:9000"
+    volumes:
+      - minio-volume:/mnt/minio-volume
+      - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
+    entrypoint: bash /setup.sh
+  minio:
+    container_name: minio
+    image: minio/minio:latest
+    environment:
+      - MINIO_CONFIG_ENV_FILE=/etc/config.env
+    ports:
+      - "${MINIO_PORT}:9000"
+      - "${MINIO_BROWSER_PORT}:9001"
+    volumes:
+      - minio-volume:/mnt/minio-volume
+      - $RECALL_PROJECT_PATH/config/minio-server.env:/etc/config.env
+    command: server --console-address ":9001"
+    healthcheck:
+      test: "curl -f http://localhost:9000/minio/health/live"
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+      start_interval: 5s
+    restart: always
+  postgres:
+    image: postgres:17.0-alpine
+    container_name: postgres
+    env_file: $RECALL_PROJECT_PATH/config/postgres.env
+    ports:
+      - ${POSTGRES_HOST_PORT}:5432
+    volumes:
+      - pgdata-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U postgres_user -d postgres_db"
+      interval: 3s
+      timeout: 3s
+      start_period: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  minio-volume:
+    driver_opts:
+      type: none
+      o: bind
+      device: $MINIO_VOLUME_PATH
+  pgdata-volume:
+    driver_opts:
+      type: none
+      o: bind
+      device: $POSTGRES_VOLUME_PATH
