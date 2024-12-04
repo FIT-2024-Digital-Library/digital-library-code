@@ -1,14 +1,12 @@
 from datetime import date
 
-from fastapi import HTTPException, Depends
 from sqlalchemy import select, insert, update, delete
 
 from app.crud.authors import get_existent_or_create_author_in_db, get_author_from_db
-from app.crud.genres import get_genre_from_db, create_genre_in_db, get_existent_or_create_genre_in_db
+from app.crud.genres import get_genre_from_db, get_existent_or_create_genre_in_db
 from app.db.database import async_session_maker
-from app.db.models import book_table, author_table, genre_table
+from app.db.models import book_table
 from app.schemas import CreateBook, GenreCreate, AuthorCreate
-from app.users.dependencies import get_current_user
 
 
 async def get_books_from_db(id: int = None,
@@ -92,5 +90,3 @@ async def delete_book_from_db(id: int):
             await session.execute(query)
             await session.commit()
         return book
-
-

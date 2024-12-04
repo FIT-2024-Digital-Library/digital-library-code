@@ -1,6 +1,4 @@
-from datetime import date
-
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel
 
 
 class Author(BaseModel):

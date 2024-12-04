@@ -2,17 +2,12 @@ from datetime import date
 from typing import Optional, List
 
 from fastapi import APIRouter, Query, HTTPException, Depends
-from sqlalchemy import select, MappingResult
-
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, update_book_in_db, \
     delete_book_from_db
-from app.db.database import async_session_maker
-from app.db.models import book_table, author_table, genre_table
 from app.schemas import Book, CreateBook
 from app.schemas.users import User
-from app.users.dependencies import get_current_admin_user, get_current_user
+from app.users.dependencies import get_current_user
 
 router = APIRouter(
     prefix='/books',

@@ -1,14 +1,13 @@
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta, timezone
-import config
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class AuthSettings(BaseSettings):
     model_config = SettingsConfigDict(validate_default=False)
-    secret_key: str = config.secret_key
-    algorithm: str = config.algorithm
+    secret_key: str
+    algorithm: str
 
 
 auth_cred = AuthSettings()

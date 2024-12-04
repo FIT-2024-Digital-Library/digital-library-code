@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from pydantic import EmailStr
-from sqlalchemy import select, insert, RowMapping, delete, update
+from sqlalchemy import select, insert, delete, update
 
 from app.db.database import async_session_maker
 from app.db.models import user_table

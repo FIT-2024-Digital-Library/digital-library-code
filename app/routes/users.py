@@ -1,13 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 
-from sqlalchemy import select, insert
-
 from app.crud.users import register_user, login_user
-from app.db.database import async_session_maker
-from app.db.models import user_table
 from app.schemas.users import UserRegister, UserLogin, User, UserLogined
 
-from app.users.auth import get_password_hash, create_access_token
+from app.users.auth import create_access_token
 from app.users.dependencies import get_current_user
 
 router = APIRouter(

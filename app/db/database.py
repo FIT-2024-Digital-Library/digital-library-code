@@ -1,23 +1,20 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncConnection, async_sessionmaker
 from .models import db_metadata, user_table, author_table, genre_table, book_table
-from os import getenv
-from pydantic import Field
-import config
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PostgresSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='POSTGRES_', validate_default=False)
-    login: str = config.postgres_login
-    password: str = config.postgres_password
-    hostname: str = config.postgres_hostname
-    db_name: str
+    model_config = SettingsConfigDict(env_prefix='POSTGRES_', env_file="./config/postgres.env")
+    login: str
+    password: str
+    hostname: str
+    db: str
 
 
 pg_cred = PostgresSettings()
 
 db_engine = create_async_engine(
-    f"postgresql+asyncpg://{pg_cred.login}:{pg_cred.password}@{pg_cred.hostname}/{pg_cred.db_name}", echo=True
+    f"postgresql+asyncpg://{pg_cred.login}:{pg_cred.password}@{pg_cred.hostname}/{pg_cred.db}", echo=True
 )
 async_session_maker = async_sessionmaker(db_engine, expire_on_commit=False)
 
