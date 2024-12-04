@@ -8,7 +8,7 @@ services:
     image: minio/mc:latest
     env_file:
       - $RECALL_PROJECT_PATH/config/minio-server.env
-      - $RECALL_PROJECT_PATH/config/minio-backend.env
+      - $RECALL_PROJECT_PATH/config/minio-client.env
     environment:
       - "MINIO_SERVER_HOSTNAME=http://minio:9000"
     volumes:
