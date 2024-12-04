@@ -9,17 +9,16 @@ from app.db.models import book_table
 from app.schemas import CreateBook, GenreCreate, AuthorCreate
 
 
-async def get_books_from_db(id: int = None,
-                            title: str = None,
-                            author: str = None,
-                            genre: str = None,
-                            published_date: date = None,
-                            description: str = None,
-                            pdf_url: str = None):
+async def get_books_from_db(
+        title: str = None,
+        author: str = None,
+        genre: str = None,
+        published_date: date = None,
+        description: str = None,
+        image: str = None,
+        pdf_url: str = None):
     async with async_session_maker() as session:
         query = select(book_table)
-        if id is not None:
-            query = query.where(book_table.c.id == id)
         if title is not None:
             query = query.where(book_table.c.title.ilike(f"%{title}%"))
         if author is not None:
@@ -35,14 +34,17 @@ async def get_books_from_db(id: int = None,
         if pdf_url is not None:
             query = query.where(book_table.c.pdf_url == pdf_url)
 
+        if image is not None:
+            query = query.where(book_table.c.image == image)
+
         result = await session.execute(query)
         books = result.mappings().all()
         return books
 
 
-async def get_book_from_db(id: int):
+async def get_book_from_db(book_id: int):
     async with async_session_maker() as session:
-        query = select(book_table).where(book_table.c.id == id)
+        query = select(book_table).where(book_table.c.id == book_id)
         result = await session.execute(query)
         return result.mappings().first()
 
@@ -64,7 +66,7 @@ async def create_book_in_db(book: CreateBook):
         return result.inserted_primary_key[0]
 
 
-async def update_book_in_db(id: int, book: CreateBook):
+async def update_book_in_db(book_id: int, book: CreateBook):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
         genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
@@ -75,18 +77,18 @@ async def update_book_in_db(id: int, book: CreateBook):
         author_id = await get_existent_or_create_author_in_db(author_creation_model)
         book_dict['author'] = author_id
 
-        query = update(book_table).where(book_table.c.id == id).values(**book_dict)
+        query = update(book_table).where(book_table.c.id == book_id).values(**book_dict)
         result = await session.execute(query)
         await session.commit()
-        book = await get_book_from_db(id)
+        book = await get_book_from_db(book_id)
         return book
 
 
-async def delete_book_from_db(id: int):
+async def delete_book_from_db(book_id: int):
     async with async_session_maker() as session:
-        book = await get_book_from_db(id)
+        book = await get_book_from_db(book_id)
         if book:
-            query = delete(book_table).where(book_table.c.id == id)
+            query = delete(book_table).where(book_table.c.id == book_id)
             await session.execute(query)
             await session.commit()
         return book

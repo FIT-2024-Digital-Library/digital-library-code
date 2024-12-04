@@ -27,7 +27,7 @@ async def get_current_user(token: str = Depends(get_token)):
 
     user_id = payload.get('sub')
     if not user_id:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User id wasn\'t found')
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User author_id wasn\'t found')
 
     user = await find_user_by_id(int(user_id))
     if not user:

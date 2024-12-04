@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-from pydantic import EmailStr
 from sqlalchemy import select, insert, delete, update
 
 from app.db.database import async_session_maker
@@ -40,33 +39,33 @@ async def login_user(user_data: UserLogin):
         return user
 
 
-async def find_user_by_id(id: int):
+async def find_user_by_id(user_id: int):
     async with async_session_maker() as session:
         query = select(
             user_table.c.id,
             user_table.c.email,
             user_table.c.name,
             user_table.c.privileges
-        ).where(user_table.c.id == id)
+        ).where(user_table.c.id == user_id)
 
         result = await session.execute(query)
         user = result.mappings().first()
         return user
 
 
-async def delete_user_from_db(id: int):
+async def delete_user_from_db(user_id: int):
     async with async_session_maker() as session:
-        user = await find_user_by_id(id)
+        user = await find_user_by_id(user_id)
         if user:
-            query = delete(user_table).where(user_table.c.id == id)
+            query = delete(user_table).where(user_table.c.id == user_id)
             await session.execute(query)
             await session.commit()
         return user
 
 
-async def update_user_in_db(id: int, user_data: UserRegister):
+async def update_user_in_db(user_id: int, user_data: UserRegister):
     async with async_session_maker() as session:
-        user = await find_user_by_id(id)
+        user = await find_user_by_id(user_id)
         if user:
             raise HTTPException(status_code=403, detail="User doesn't exist")
         user_dict = user_data.model_dump()
@@ -74,7 +73,7 @@ async def update_user_in_db(id: int, user_data: UserRegister):
         user_dict["password_hash"] = get_password_hash(user_data.password)
         user_dict['privileges'] = "basic"
         user_dict.pop("password")
-        query = update(user_table).where(user_table.c.id == id).values(**user_dict)
+        query = update(user_table).where(user_table.c.id == user_id).values(**user_dict)
         result = await session.execute(query)
         await session.commit()
         if result.inserted_primary_key:

@@ -17,19 +17,19 @@ router = APIRouter(
 
 @router.get('/', response_model=List[Book], summary='Returns books using search parameters (all of them otherwise)')
 async def get_books(
-        id: Optional[int] = Query(None, description="Filter by book ID"),
         title: Optional[str] = Query(None, description="Filter by book title"),
         author: Optional[str] = Query(None, description="Filter by author"),
         genre: Optional[str] = Query(None, description="Filter by name"),
         published_date: Optional[date] = Query(None, description="Filter by publication date"),
         description: Optional[str] = Query(None, description="Filter by description keyword"),
+        image: Optional[str] = Query(None, description="Filter by image\'s path"),
         pdf_url: Optional[str] = Query(None, description="Filter by PDF URL")
 ):
-    books = await get_books_from_db(id, title, author, genre, published_date, description, pdf_url)
+    books = await get_books_from_db(title, author, genre, published_date, description, image, pdf_url)
     return books
 
 
-@router.get('/{id}', response_model=Book, summary='Returns book data')
+@router.get('/{author_id}', response_model=Book, summary='Returns book data')
 async def get_book(id: int):
     result = await get_book_from_db(id)
     if result is None:
@@ -43,7 +43,7 @@ async def create_book(book: CreateBook, user_data: User = Depends(get_current_us
     return id
 
 
-@router.put('/{id}/update', response_model=Book,
+@router.put('/{author_id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin previlegy')
 async def update_book(id: int, book: CreateBook, user_data: User = Depends(get_current_user)):
     book = await update_book_in_db(id, book)
@@ -52,7 +52,7 @@ async def update_book(id: int, book: CreateBook, user_data: User = Depends(get_c
     return book
 
 
-@router.delete('/{id}/delete', response_model=Book,
+@router.delete('/{author_id}/delete', response_model=Book,
                summary='Deletes book. Only for authorized user with admin previlegy')
 async def delete_book(id: int, user_data: User = Depends(get_current_user)):
     book = await delete_book_from_db(id)
