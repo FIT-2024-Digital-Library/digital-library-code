@@ -1,5 +1,8 @@
+import asyncpg
 from sqlalchemy import select, insert, delete, update
+from sqlalchemy.exc import IntegrityError
 
+from app.crud.crud_exception import CrudException
 from app.db.database import async_session_maker
 from app.db.models import author_table
 from app.schemas import AuthorCreate
@@ -10,7 +13,7 @@ async def get_author_from_db(id: int = None, name: str = None):
         if id is not None:
             query = select(author_table).where(author_table.c.id == id)
         elif name is not None:
-            query = select(author_table).where(author_table.c.name == name)
+            query = select(author_table).where(author_table.c.name.ilike(f"%{name}%"))
         else:
             return None
         result = await session.execute(query)
@@ -48,20 +51,26 @@ async def get_existent_or_create_author_in_db(author: AuthorCreate):
 
 async def delete_author_from_db(id: int):
     async with async_session_maker() as session:
-        author = await get_author_from_db(id)
-        if author is not None:
-            query = delete(author_table).where(author_table.c.id == id)
-            await session.execute(query)
-            await session.commit()
-        return author
+        try:
+            author = await get_author_from_db(id)
+            if author is not None:
+                query = delete(author_table).where(author_table.c.id == id)
+                await session.execute(query)
+                await session.commit()
+            return author
+        except IntegrityError as e:
+            raise CrudException("Update or delete on table violates foreign key constraint")
 
 
 async def update_author_in_db(id: int, author: AuthorCreate):
     async with async_session_maker() as session:
-        author_in_db = await get_author_from_db(id)
-        if author_in_db is not None:
-            query = update(author_table).where(author_table.c.id == id).values(**author.model_dump())
-            await session.execute(query)
-            await session.commit()
+        try:
             author_in_db = await get_author_from_db(id)
-        return author_in_db
+            if author_in_db is not None:
+                query = update(author_table).where(author_table.c.id == id).values(**author.model_dump())
+                await session.execute(query)
+                await session.commit()
+                author_in_db = await get_author_from_db(id)
+            return author_in_db
+        except IntegrityError as e:
+            raise CrudException("Update or delete on table violates foreign key constraint")

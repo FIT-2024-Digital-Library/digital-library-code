@@ -1,9 +1,11 @@
 from typing import List, Optional
 
+import asyncpg
 from fastapi import APIRouter, HTTPException, Depends, Query
 
 from app.crud.authors import get_author_from_db, get_authors_from_db, create_author_in_db, delete_author_from_db, \
     update_author_in_db
+from app.crud.crud_exception import CrudException
 from app.schemas import Author, AuthorCreate
 from app.users.dependencies import get_current_user, get_current_admin_user
 
@@ -38,17 +40,23 @@ async def create_author(author: AuthorCreate, user_data=Depends(get_current_user
     return key
 
 
-@router.delete('/delete', response_model=Author, summary='Deletes authors')
+@router.delete('/delete/{id}', response_model=Author, summary='Deletes authors')
 async def delete_author(id: int, user_data=Depends(get_current_user)):
-    author = await delete_author_from_db(id)
-    if author is None:
-        raise HTTPException(status_code=404, detail="Author not found")
-    return author
+    try:
+        author = await delete_author_from_db(id)
+        if author is None:
+            raise HTTPException(status_code=404, detail="Author not found")
+        return author
+    except CrudException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.put('/update/{id}', response_model=Author, summary='Updates authors')
-async def delete_author(id: int, author: AuthorCreate, user_data=Depends(get_current_user)):
-    author = await update_author_in_db(id, author)
-    if author is None:
-        raise HTTPException(status_code=404, detail="Author not found")
-    return author
+async def update_author(id: int, author: AuthorCreate, user_data=Depends(get_current_user)):
+    try:
+        author = await update_author_in_db(id, author)
+        if author is None:
+            raise HTTPException(status_code=404, detail="Author not found")
+        return author
+    except CrudException as e:
+        raise HTTPException(status_code=404, detail=str(e))

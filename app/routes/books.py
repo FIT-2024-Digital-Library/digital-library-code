@@ -22,15 +22,15 @@ router = APIRouter(
 
 @router.get('/', response_model=List[Book], summary='Returns books using search parameters (all of them otherwise)')
 async def get_books(
-        id: Optional[int] = Query(None, description="Filter by book ID"),
         title: Optional[str] = Query(None, description="Filter by book title"),
         author: Optional[str] = Query(None, description="Filter by author"),
         genre: Optional[str] = Query(None, description="Filter by name"),
         published_date: Optional[date] = Query(None, description="Filter by publication date"),
         description: Optional[str] = Query(None, description="Filter by description keyword"),
+        image: Optional[str] = Query(None, description="Filter by image\'s path"),
         pdf_url: Optional[str] = Query(None, description="Filter by PDF URL")
 ):
-    books = await get_books_from_db(id, title, author, genre, published_date, description, pdf_url)
+    books = await get_books_from_db(title, author, genre, published_date, description, image, pdf_url)
     return books
 
 

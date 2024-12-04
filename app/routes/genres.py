@@ -1,9 +1,11 @@
 from typing import List, Optional
 
+import asyncpg
 from fastapi import APIRouter, HTTPException, Depends, Query
 
 from app.crud.genres import get_genre_from_db, get_genres_from_db, create_genre_in_db, delete_genre_from_db, \
     update_genre_in_db
+from app.crud.crud_exception import CrudException
 from app.schemas import Genre, GenreCreate
 from app.users.dependencies import get_current_user, get_current_admin_user
 
@@ -38,17 +40,23 @@ async def create_genre(genre: GenreCreate, user_data=Depends(get_current_user)):
     return key
 
 
-@router.delete('/delete', response_model=Genre, summary='Deletes genres')
+@router.delete('/delete/{id}', response_model=Genre, summary='Deletes genres')
 async def delete_genre(id: int, user_data=Depends(get_current_user)):
-    genre = await delete_genre_from_db(id)
-    if genre is None:
-        raise HTTPException(status_code=404, detail="Genre not found")
-    return genre
+    try:
+        genre = await delete_genre_from_db(id)
+        if genre is None:
+            raise HTTPException(status_code=404, detail="Genre not found")
+        return genre
+    except CrudException as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.put('/update/{id}', response_model=Genre, summary='Updates genres')
-async def delete_genre(id: int, genre: GenreCreate, user_data=Depends(get_current_user)):
-    genre = await update_genre_in_db(id, genre)
-    if genre is None:
-        raise HTTPException(status_code=404, detail="Genre not found")
-    return genre
+async def update_genre(id: int, genre: GenreCreate, user_data=Depends(get_current_user)):
+    try:
+        genre = await update_genre_in_db(id, genre)
+        if genre is None:
+            raise HTTPException(status_code=404, detail="Genre not found")
+        return genre
+    except CrudException as e:
+        raise HTTPException(status_code=404, detail=str(e))

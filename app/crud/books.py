@@ -11,17 +11,16 @@ from app.schemas import CreateBook, GenreCreate, AuthorCreate
 from app.users.dependencies import get_current_user
 
 
-async def get_books_from_db(id: int = None,
-                            title: str = None,
-                            author: str = None,
-                            genre: str = None,
-                            published_date: date = None,
-                            description: str = None,
-                            pdf_url: str = None):
+async def get_books_from_db(
+        title: str = None,
+        author: str = None,
+        genre: str = None,
+        published_date: date = None,
+        description: str = None,
+        image: str = None,
+        pdf_url: str = None):
     async with async_session_maker() as session:
         query = select(book_table)
-        if id is not None:
-            query = query.where(book_table.c.id == id)
         if title is not None:
             query = query.where(book_table.c.title.ilike(f"%{title}%"))
         if author is not None:
@@ -36,6 +35,9 @@ async def get_books_from_db(id: int = None,
             query = query.where(book_table.c.description.ilike(f"%{description}%"))
         if pdf_url is not None:
             query = query.where(book_table.c.pdf_url == pdf_url)
+
+        if image is not None:
+            query = query.where(book_table.c.image == image)
 
         result = await session.execute(query)
         books = result.mappings().all()
@@ -92,5 +94,3 @@ async def delete_book_from_db(id: int):
             await session.execute(query)
             await session.commit()
         return book
-
-
