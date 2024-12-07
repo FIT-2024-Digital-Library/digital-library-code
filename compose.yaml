@@ -24,14 +24,12 @@ services:
     env_file:
       - $RECALL_PROJECT_PATH/config/minio-server.env
       - $RECALL_PROJECT_PATH/config/minio-client.env
+    environment:
+      - MINIO_SERVER_HOSTNAME=http://minio:9000
     volumes:
       - minio-volume:/data
-    entrypoint: >
-      sh -c "
-      mc alias set local http://minio:9000 $MINIO_ROOT_USER $MINIO_ROOT_PASSWORD &&
-      mc admin user add local $MINIO_LOGIN $MINIO_PASSWORD &&
-      mc admin policy attach local readwrite --user $MINIO_LOGIN &&
-      mc mb /data/$MINIO_BUCKET_NAME"
+      - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
+    entrypoint: bash /setup.sh
   minio:
     container_name: minio
     image: minio/minio:latest
