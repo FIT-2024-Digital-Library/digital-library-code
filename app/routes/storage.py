@@ -12,14 +12,6 @@ router = APIRouter(
 )
 
 
-# Проверка подключения к MinIO
-try:
-    if not minio_client.bucket_exists(minio_cred.BUCKET_NAME):
-        minio_client.make_bucket(minio_cred.BUCKET_NAME)
-except S3Error as e:
-    print(e)
-
-
 @router.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
     try:
