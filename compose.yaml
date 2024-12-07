@@ -24,8 +24,6 @@ services:
     env_file:
       - $RECALL_PROJECT_PATH/config/minio-server.env
       - $RECALL_PROJECT_PATH/config/minio-client.env
-    environment:
-      - MINIO_SERVER_HOSTNAME=http://minio:9000
     volumes:
       - minio-volume:/data
       - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
