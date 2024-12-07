@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:17.0-alpine
-    container_name: postgres
+    container_name: library-postgres
     env_file: $RECALL_PROJECT_PATH/config/postgres.env
     ports:
       - ${POSTGRES_HOST_PORT}:5432
@@ -15,7 +15,7 @@ services:
       retries: 5
     restart: always
   minio-setup:
-    container_name: minio-setup
+    container_name: library-minio-setup
     depends_on:
       minio:
         condition: service_healthy
@@ -29,7 +29,7 @@ services:
       - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
   minio:
-    container_name: minio
+    container_name: library-minio
     image: minio/minio:latest
     env_file:
       - $RECALL_PROJECT_PATH/config/minio-server.env
