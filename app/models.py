@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, Date, LargeBinary, ForeignKey
+from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.dialects.postgresql import ENUM
 
 db_metadata = MetaData()

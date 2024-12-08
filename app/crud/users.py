@@ -1,10 +1,10 @@
 from fastapi import HTTPException
 from sqlalchemy import select, insert, delete, update
 
-from app.db.database import async_session_maker
-from app.db.models import user_table
-from app.schemas.users import UserRegister, UserLogin
-from app.users.auth import get_password_hash, verify_password
+from app.models import user_table
+from app.schemas import UserRegister, UserLogin
+from app.settings import async_session_maker
+from app.utils import get_password_hash, verify_password
 
 
 async def register_user(user_data: UserRegister):

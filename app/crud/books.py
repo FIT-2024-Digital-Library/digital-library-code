@@ -1,11 +1,10 @@
 from datetime import date
-
 from sqlalchemy import select, insert, update, delete
 
 from app.crud.authors import get_existent_or_create_author_in_db, get_author_from_db
 from app.crud.genres import get_genre_from_db, get_existent_or_create_genre_in_db
-from app.db.database import async_session_maker
-from app.db.models import book_table
+from app.settings import async_session_maker
+from app.models import book_table
 from app.schemas import CreateBook, GenreCreate, AuthorCreate
 
 

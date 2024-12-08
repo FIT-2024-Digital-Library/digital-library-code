@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field, HttpUrl, EmailStr
+from pydantic import BaseModel, Field, EmailStr
+
+__all__ = ["User", "UserLogin", "UserLogined", "UserRegister"]
 
 
 class UserRegister(BaseModel):

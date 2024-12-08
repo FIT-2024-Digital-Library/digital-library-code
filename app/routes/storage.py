@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from minio.error import S3Error
 import io
 
-from app.storage.config import minio_client, minio_cred
+from app.settings import minio_client, minio_cred
 
 
 router = APIRouter(

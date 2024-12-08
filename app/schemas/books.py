@@ -1,7 +1,8 @@
 from datetime import date
 from typing import Optional
+from pydantic import BaseModel
 
-from pydantic import BaseModel, Field, HttpUrl
+__all__ = ["Book", "CreateBook"]
 
 
 class Book(BaseModel):

@@ -2,11 +2,11 @@ from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Depends, Query
 
-from app.crud.authors import get_author_from_db, get_authors_from_db, create_author_in_db, delete_author_from_db, \
-    update_author_in_db
-from app.crud.crud_exception import CrudException
+from app.crud.authors import get_author_from_db, get_authors_from_db, create_author_in_db, \
+    delete_author_from_db, update_author_in_db
 from app.schemas import Author, AuthorCreate
-from app.users.dependencies import get_current_user, get_current_admin_user
+from app.utils import CrudException, get_current_user
+
 
 router = APIRouter(
     prefix='/authors',

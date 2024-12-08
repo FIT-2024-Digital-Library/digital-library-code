@@ -1,4 +1,4 @@
 import asyncio
-from app.db.database import create_tables
+from app.database import create_tables
 
 asyncio.run(create_tables())

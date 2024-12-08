@@ -1,4 +1,6 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel
+
+__all__ = ["Genre", "GenreCreate"]
 
 
 class Genre(BaseModel):
