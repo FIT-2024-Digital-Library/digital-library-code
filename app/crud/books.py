@@ -21,10 +21,12 @@ async def get_books_from_db(
         if title is not None:
             query = query.where(book_table.c.title.ilike(f"%{title}%"))
         if author is not None:
-            author_id = await get_author_from_db(name=author)
+            author_in_db = await get_author_from_db(author)
+            author_id = author_in_db.get("id")
             query = query.where(book_table.c.author == author_id)
         if genre is not None:
-            genre_id = get_genre_from_db(name=genre)
+            genre_in_db = await get_genre_from_db(genre)
+            genre_id = genre_in_db.get('id')
             query = query.where(book_table.c.name == genre_id)
         if published_date is not None:
             query = query.where(book_table.c.published_date == published_date)
