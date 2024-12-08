@@ -36,7 +36,7 @@ async def create_genre_in_db(genre: GenreCreate):
 async def get_existent_or_create_genre_in_db(genre: GenreCreate):
     async with async_session_maker() as session:
         genres_in_db = await get_genres_from_db(name=genre.name)
-        if genres_in_db is None or len(genres_in_db) is 0:
+        if genres_in_db is None or len(genres_in_db) == 0:
             query = insert(genre_table).values(**genre.model_dump())
             result = await session.execute(query)
             await session.commit()
