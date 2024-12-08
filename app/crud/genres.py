@@ -1,10 +1,10 @@
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import IntegrityError
 
-from app.crud.crud_exception import CrudException
-from app.db.database import async_session_maker
-from app.db.models import genre_table
+from app.settings import async_session_maker
+from app.models import genre_table
 from app.schemas import GenreCreate
+from app.utils import CrudException
 
 
 async def get_genre_from_db(genre_id):
@@ -36,7 +36,7 @@ async def create_genre_in_db(genre: GenreCreate):
 async def get_existent_or_create_genre_in_db(genre: GenreCreate):
     async with async_session_maker() as session:
         genres_in_db = await get_genres_from_db(name=genre.name)
-        if genres_in_db is None:
+        if genres_in_db is None or len(genres_in_db) is 0:
             query = insert(genre_table).values(**genre.model_dump())
             result = await session.execute(query)
             await session.commit()

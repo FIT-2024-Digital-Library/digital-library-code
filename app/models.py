@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, Date, LargeBinary, ForeignKey
+from sqlalchemy import MetaData, Table, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.dialects.postgresql import ENUM
 
 db_metadata = MetaData()
@@ -38,6 +38,6 @@ book_table = Table(
     Column("genre", ForeignKey(genre_table.c.id), nullable=True),
     Column("published_date", Date, nullable=True),
     Column("description", String, nullable=True),
-    Column("image", String, nullable=True),
+    Column("image_url", String, nullable=True),
     Column("pdf_url", String)
 )

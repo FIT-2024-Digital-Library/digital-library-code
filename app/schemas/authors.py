@@ -1,12 +1,12 @@
-from datetime import date
+from .base import CamelCaseBaseModel
 
-from pydantic import BaseModel, Field, HttpUrl
+__all__ = ["Author", "AuthorCreate"]
 
 
-class Author(BaseModel):
+class Author(CamelCaseBaseModel):
     id: int
     name: str
 
 
-class AuthorCreate(BaseModel):
+class AuthorCreate(CamelCaseBaseModel):
     name: str

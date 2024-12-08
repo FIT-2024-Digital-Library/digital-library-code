@@ -1,10 +1,20 @@
-from fastapi import Request, HTTPException, status, Depends
 from jose import jwt, JWTError
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from fastapi import Request, HTTPException, status, Depends
 
 from app.crud.users import find_user_by_id
-from app.schemas.users import User
-from app.users.auth import auth_cred
+from app.schemas import User
+from app.settings import auth_cred
+
+__all__ = ["create_access_token", "get_current_admin_user", "get_current_user"]
+
+
+def create_access_token(data: dict) -> str:
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(days=30)
+    to_encode.update({"exp": expire})
+    encode_jwt = jwt.encode(to_encode, auth_cred.secret_key, algorithm=auth_cred.algorithm)
+    return encode_jwt
 
 
 def get_token(request: Request):
