@@ -66,7 +66,7 @@ async def delete_user_from_db(user_id: int):
 async def update_user_in_db(user_id: int, user_data: UserRegister):
     async with async_session_maker() as session:
         user = await find_user_by_id(user_id)
-        if user:
+        if user is None:
             raise HTTPException(status_code=403, detail="User doesn't exist")
         user_dict = user_data.model_dump()
 
@@ -79,3 +79,16 @@ async def update_user_in_db(user_id: int, user_data: UserRegister):
         if result.inserted_primary_key:
             user_dict.pop("password_hash")
             return user_dict
+
+
+async def set_admin_role_for_user(user_id: int):
+    async with async_session_maker() as session:
+        user = await find_user_by_id(user_id)
+        if user is None:
+            raise HTTPException(status_code=403, detail="User doesn't exist")
+
+        query = update(user_table).where(user_table.c.id == user_id).values(**{'privileges': 'admin'})
+        await session.execute(query)
+        await session.commit()
+        user = await find_user_by_id(user_id)
+        return user

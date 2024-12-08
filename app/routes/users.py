@@ -2,13 +2,13 @@ from fastapi import APIRouter, HTTPException, status, Response, Depends
 
 from sqlalchemy import select, insert
 
-from app.crud.users import register_user, login_user
+from app.crud.users import register_user, login_user, set_admin_role_for_user
 from app.db.database import async_session_maker
 from app.db.models import user_table
 from app.schemas.users import UserRegister, UserLogin, User, UserLogined
 
 from app.users.auth import get_password_hash, create_access_token
-from app.users.dependencies import get_current_user
+from app.users.dependencies import get_current_user, get_current_admin_user
 
 router = APIRouter(
     prefix='/users',
@@ -44,3 +44,9 @@ async def register(user_data: UserRegister):
 async def logout_user(response: Response):
     response.delete_cookie(key="users_access_token", secure=True, samesite='none')
     return {'message': 'You successfully logged out'}
+
+
+@router.post('/{user_id}/get_admin_role', response_model=UserLogined, summary='Logs user in')
+async def get_admin_role(user_id, User=Depends(get_current_user)):
+    data = await set_admin_role_for_user(user_id)
+    return data
