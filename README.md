@@ -10,6 +10,7 @@
 - [PostgreSQL 17](https://www.postgresql.org) as the SQL database.
 
 ## How to deploy the service
+
 1. Execute next commands locating in project's root:
 ```bash
 # To create a virtual environment, you can use the venv module that comes with Python
@@ -26,6 +27,7 @@ python -m pip install --upgrade pip
 # Install packages from requirements.txt
 pip install -r requirements.txt
 ```
+
 2. Это пункт необходим для корректной работы `docker compose`. Определите `.env` файл в корневой директории проекта, либо экспортируйте в терминальную сессию переменные окружения. Необходимо задать следующие значения:
 ```conf
 RECALL_PROJECT_PATH=...  # Путь до папки проекта
@@ -37,8 +39,8 @@ MINIO_BROWSER_PORT=...  # Порт для доступа к MinIO Console - GUI 
 POSTGRES_VOLUME_PATH=...
 POSTGRES_HOST_PORT=...
 ```
-3. Add config files into folder `config/`:
 
+3. Add config files into folder `config/`:
 - `minio-client.env`:
 ```conf
 MINIO_HOSTNAME=<minio_addr>  # IP address
@@ -67,11 +69,7 @@ SECRET_KEY=<secret_key_for_encrypting>
 ALGORITHM=<encrypting_algorithm: e.g. HS256>
 ```
 
-4. To create tables in DB, run:
-```bash
-python create_tables.py
-```
-5. Run service:
+4. Run service:
 ```bash
 fastapi dev main.py
 ```
