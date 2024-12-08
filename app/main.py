@@ -1,16 +1,19 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
-from app.routes import books, users, authors, genres, storage
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI()
+from app.routes import books, users, authors, genres, storage
+from app.utils import create_tables, close_connections
 
-app.include_router(books.router)
-app.include_router(users.router)
-app.include_router(authors.router)
-app.include_router(genres.router)
-app.include_router(storage.router)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await create_tables()
+    yield
+    await close_connections()
+
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['http://localhost:5173'],
@@ -18,3 +21,9 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*']
 )
+
+app.include_router(books.router)
+app.include_router(users.router)
+app.include_router(authors.router)
+app.include_router(genres.router)
+app.include_router(storage.router)
