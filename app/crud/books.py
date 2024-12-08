@@ -51,11 +51,11 @@ async def get_book_from_db(book_id: int):
 async def create_book_in_db(book: BookCreate):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
-        genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
+        genre_creation_model = GenreCreate(name=book_dict['genre'])
         genre_id = await get_existent_or_create_genre_in_db(genre_creation_model)
         book_dict['genre'] = genre_id
 
-        author_creation_model = AuthorCreate(**{'name': book_dict['author']})
+        author_creation_model = AuthorCreate(name=book_dict['author'])
         author_id = await get_existent_or_create_author_in_db(author_creation_model)
         book_dict['author'] = author_id
 
@@ -68,16 +68,16 @@ async def create_book_in_db(book: BookCreate):
 async def update_book_in_db(book_id: int, book: BookCreate):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
-        genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
+        genre_creation_model = GenreCreate(name=book_dict['genre'])
         genre_id = await get_existent_or_create_genre_in_db(genre_creation_model)
         book_dict['genre'] = genre_id
 
-        author_creation_model = AuthorCreate(**{'name': book_dict['author']})
+        author_creation_model = AuthorCreate(name=book_dict['author'])
         author_id = await get_existent_or_create_author_in_db(author_creation_model)
         book_dict['author'] = author_id
 
         query = update(book_table).where(book_table.c.id == book_id).values(**book_dict)
-        result = await session.execute(query)
+        await session.execute(query)
         await session.commit()
         book = await get_book_from_db(book_id)
         return book
