@@ -1,5 +1,4 @@
 from urllib.parse import quote
-
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import StreamingResponse
 from minio.error import S3Error
@@ -16,7 +15,7 @@ router = APIRouter(
 
 
 @router.post("/upload/", response_model=FileUploadedScheme)
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File()):
     try:
         # Чтение файла в память
         file_data = await file.read()

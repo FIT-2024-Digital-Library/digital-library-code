@@ -5,7 +5,7 @@ from app.crud.authors import get_existent_or_create_author_in_db, get_author_fro
 from app.crud.genres import get_genre_from_db, get_existent_or_create_genre_in_db
 from app.settings import async_session_maker
 from app.models import book_table
-from app.schemas import CreateBook, GenreCreate, AuthorCreate
+from app.schemas import BookCreate, GenreCreate, AuthorCreate
 
 
 async def get_books_from_db(
@@ -48,7 +48,7 @@ async def get_book_from_db(book_id: int):
         return result.mappings().first()
 
 
-async def create_book_in_db(book: CreateBook):
+async def create_book_in_db(book: BookCreate):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
         genre_creation_model = GenreCreate(**{'name': book_dict['genre']})
@@ -65,7 +65,7 @@ async def create_book_in_db(book: CreateBook):
         return result.inserted_primary_key[0]
 
 
-async def update_book_in_db(book_id: int, book: CreateBook):
+async def update_book_in_db(book_id: int, book: BookCreate):
     async with async_session_maker() as session:
         book_dict = book.model_dump()
         genre_creation_model = GenreCreate(**{'name': book_dict['genre']})

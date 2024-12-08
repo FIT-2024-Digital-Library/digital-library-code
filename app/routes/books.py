@@ -1,11 +1,10 @@
 from datetime import date
 from typing import Optional, List
-
 from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
-from app.schemas import Book, CreateBook, User
+from app.schemas import Book, BookCreate, User
 from app.utils.auth import get_current_user
 
 
@@ -38,14 +37,14 @@ async def get_book(book_id: int):
 
 
 @router.post('/create', response_model=int, summary='Creates new book. Only for authorized user with admin previlegy')
-async def create_book(book: CreateBook, user_data: User = Depends(get_current_user)):
+async def create_book(book: BookCreate, user_data: User = Depends(get_current_user)):
     id = await create_book_in_db(book)
     return id
 
 
 @router.put('/{book_id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin previlegy')
-async def update_book(book_id: int, book: CreateBook, user_data: User = Depends(get_current_user)):
+async def update_book(book_id: int, book: BookCreate, user_data: User = Depends(get_current_user)):
     book = await update_book_in_db(book_id, book)
     if book is None:
         raise HTTPException(status_code=404, detail="Book not found")

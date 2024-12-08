@@ -2,7 +2,7 @@ from datetime import date
 from typing import Optional
 from .base import CamelCaseBaseModel
 
-__all__ = ["Book", "CreateBook"]
+__all__ = ["Book", "BookCreate"]
 
 
 class Book(CamelCaseBaseModel):
@@ -16,7 +16,7 @@ class Book(CamelCaseBaseModel):
     pdf_url: str
 
 
-class CreateBook(CamelCaseBaseModel):
+class BookCreate(CamelCaseBaseModel):
     title: str
     author: str
     genre: Optional[str] = None
