@@ -1,12 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 
-from sqlalchemy import select, insert
-
-from app.crud.users import register_user, login_user, set_admin_role_for_user
-from app.schemas.users import UserRegister, UserLogin, User, UserLogined
+from app.crud.users import set_admin_role_for_user
 from app.crud.users import register_user, login_user
 from app.schemas import UserRegister, UserLogin, User, UserLogined
 from app.utils.auth import create_access_token, get_current_user
+
 
 router = APIRouter(
     prefix='/users',
