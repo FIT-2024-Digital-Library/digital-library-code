@@ -50,6 +50,19 @@ async def find_user_by_id(session: AsyncSession, user_id: int):
     return user
 
 
+async def get_users_from_db(session: AsyncSession):
+    query = select(
+        user_table.c.id,
+        user_table.c.email,
+        user_table.c.name,
+        user_table.c.privileges
+    )
+
+    result = await session.execute(query)
+    user = result.mappings().all()
+    return user
+
+
 async def delete_user_from_db(session: AsyncSession, user_id: int):
     user = await find_user_by_id(session, user_id)
     if user:
@@ -68,10 +81,10 @@ async def update_user_in_db(session: AsyncSession, user_id: int, user_data: User
     user_dict['privileges'] = "basic"
     user_dict.pop("password")
     query = update(user_table).where(user_table.c.id == user_id).values(**user_dict)
-    result = await session.execute(query)
-    if result.inserted_primary_key:
-        user_dict.pop("password_hash")
-        return user_dict
+    await session.execute(query)
+
+    user = await find_user_by_id(session, user_id)
+    return user
 
 
 async def set_admin_role_for_user(session: AsyncSession, user_id: int):

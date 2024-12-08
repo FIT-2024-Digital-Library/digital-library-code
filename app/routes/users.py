@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 
-from app.crud.users import set_admin_role_for_user
+from app.crud.users import set_admin_role_for_user, find_user_by_id, get_users_from_db, update_user_in_db
 from app.crud.users import register_user, login_user
 from app.schemas import UserRegister, UserLogin, User, UserLogined
 from app.settings import async_session_maker
@@ -47,8 +47,32 @@ async def logout_user(response: Response):
 
 
 @router.post('/{user_id}/get_admin_role', response_model=UserLogined, summary='Logs user in')
-async def get_admin_role(user_id, User=Depends(get_current_user)):
+async def get_admin_role(user_id: int, User=Depends(get_current_user)):
     async with async_session_maker() as session:
         data = await set_admin_role_for_user(session, user_id)
         await session.commit()
+        return data
+
+
+@router.put('/{user_id}/update', response_model=UserLogined, summary='Updates user by id')
+async def update_user_by_id(user_id: int, user_data: UserRegister, User=Depends(get_current_user)):
+    async with async_session_maker() as session:
+        data = await update_user_in_db(session, user_id, user_data)
+        await session.commit()
+        return data
+
+
+@router.get('/{user_id}', response_model=UserLogined, summary='Returns user by id')
+async def get_user_by_id(user_id: int, User=Depends(get_current_user)):
+    async with async_session_maker() as session:
+        user = await find_user_by_id(session, user_id)
+        if user is None:
+            raise HTTPException(status_code=403, detail="User doesn't exist")
+        return user
+
+
+@router.get('/', response_model=list[UserLogined], summary='Returns all users')
+async def get_users(User=Depends(get_current_user)):
+    async with async_session_maker() as session:
+        data = await get_users_from_db(session)
         return data
