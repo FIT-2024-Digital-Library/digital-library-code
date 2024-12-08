@@ -4,7 +4,7 @@ from fastapi import Request, HTTPException, status, Depends
 
 from app.crud.users import find_user_by_id
 from app.schemas import User
-from app.settings import auth_cred
+from app.settings import auth_cred, async_session_maker
 
 __all__ = ["create_access_token", "get_current_admin_user", "get_current_user"]
 
@@ -38,10 +38,10 @@ async def get_current_user(token: str = Depends(get_token)):
     user_id = payload.get('sub')
     if not user_id:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User author_id wasn\'t found')
-
-    user = await find_user_by_id(int(user_id))
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
+    async with async_session_maker() as session:
+        user = await find_user_by_id(session, int(user_id))
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='User not found')
     return user
 
 
