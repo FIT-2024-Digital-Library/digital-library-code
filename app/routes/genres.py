@@ -41,7 +41,7 @@ async def create_genre(genre: GenreCreate, user_data=Depends(get_current_user)):
     return key
 
 
-@router.delete('/delete/{genre_id}', response_model=Genre, summary='Deletes genres')
+@router.delete('/{genre_id}/delete', response_model=Genre, summary='Deletes genres')
 async def delete_genre(genre_id: int, user_data=Depends(get_current_user)):
     try:
         genre = await delete_genre_from_db(genre_id)
@@ -52,7 +52,7 @@ async def delete_genre(genre_id: int, user_data=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.put('/update/{genre_id}', response_model=Genre, summary='Updates genres')
+@router.put('/{genre_id}/update', response_model=Genre, summary='Updates genres')
 async def update_genre(genre_id: int, genre: GenreCreate, user_data=Depends(get_current_user)):
     try:
         genre = await update_genre_in_db(genre_id, genre)

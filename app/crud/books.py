@@ -14,7 +14,7 @@ async def get_books_from_db(
         genre: str = None,
         published_date: date = None,
         description: str = None,
-        image: str = None,
+        image_url: str = None,
         pdf_url: str = None):
     async with async_session_maker() as session:
         query = select(book_table)
@@ -33,8 +33,8 @@ async def get_books_from_db(
         if pdf_url is not None:
             query = query.where(book_table.c.pdf_url == pdf_url)
 
-        if image is not None:
-            query = query.where(book_table.c.image == image)
+        if image_url is not None:
+            query = query.where(book_table.c.image_url == image_url)
 
         result = await session.execute(query)
         books = result.mappings().all()

@@ -36,7 +36,7 @@ async def create_author_in_db(author: AuthorCreate):
 async def get_existent_or_create_author_in_db(author: AuthorCreate):
     async with async_session_maker() as session:
         authors_in_db = await get_authors_from_db(name=author.name)
-        if authors_in_db is None:
+        if authors_in_db is None or len(authors_in_db) is 0:
             query = insert(author_table).values(**author.model_dump())
             result = await session.execute(query)
             await session.commit()

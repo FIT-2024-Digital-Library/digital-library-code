@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from .base import CamelCaseBaseModel
 
 __all__ = ["Author", "AuthorCreate"]
 
 
-class Author(BaseModel):
+class Author(CamelCaseBaseModel):
     id: int
     name: str
 
 
-class AuthorCreate(BaseModel):
+class AuthorCreate(CamelCaseBaseModel):
     name: str

@@ -1,12 +1,12 @@
-from pydantic import BaseModel
+from .base import CamelCaseBaseModel
 
 __all__ = ["Genre", "GenreCreate"]
 
 
-class Genre(BaseModel):
+class Genre(CamelCaseBaseModel):
     id: int
     name: str
 
 
-class GenreCreate(BaseModel):
+class GenreCreate(CamelCaseBaseModel):
     name: str

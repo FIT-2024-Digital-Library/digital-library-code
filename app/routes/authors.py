@@ -40,7 +40,7 @@ async def create_author(author: AuthorCreate, user_data=Depends(get_current_user
     return key
 
 
-@router.delete('/delete/{author_id}', response_model=Author, summary='Deletes authors')
+@router.delete('/{author_id}/delete', response_model=Author, summary='Deletes authors')
 async def delete_author(author_id: int, user_data=Depends(get_current_user)):
     try:
         author = await delete_author_from_db(author_id)
@@ -51,7 +51,7 @@ async def delete_author(author_id: int, user_data=Depends(get_current_user)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.put('/update/{author_id}', response_model=Author, summary='Updates authors')
+@router.put('/{author_id}/update', response_model=Author, summary='Updates authors')
 async def update_author(author_id: int, author: AuthorCreate, user_data=Depends(get_current_user)):
     try:
         author = await update_author_in_db(author_id, author)
