@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Response, Depends
 
 from app.crud.users import register_user, login_user
 from app.schemas import UserRegister, UserLogin, User, UserLogined
-from app.utils import create_access_token, get_current_user
+from app.utils.auth import create_access_token, get_current_user
 
 
 router = APIRouter(

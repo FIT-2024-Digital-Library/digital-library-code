@@ -5,7 +5,8 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from app.crud.genres import get_genre_from_db, get_genres_from_db, create_genre_in_db, \
     delete_genre_from_db, update_genre_in_db
 from app.schemas import Genre, GenreCreate
-from app.utils import CrudException, get_current_user
+from app.utils import CrudException
+from app.utils.auth import get_current_user
 
 
 router = APIRouter(

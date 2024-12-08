@@ -6,7 +6,7 @@ from fastapi import APIRouter, Query, HTTPException, Depends
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
 from app.schemas import Book, CreateBook, User
-from app.utils import get_current_user
+from app.utils.auth import get_current_user
 
 
 router = APIRouter(
