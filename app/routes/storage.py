@@ -29,22 +29,21 @@ def is_file_exists(path_to_object: str) -> bool:
 
 @router.post("/", response_model=FileUploadedScheme, summary="Uploads new file. Privileged users only.")
 def upload_file(file: UploadFile = File(), user_data: User = Depends(get_current_user)):
+    full_path = file.filename
+    name, extension = os.path.splitext(file.filename)
+    index = 0
+    while is_file_exists(full_path):
+        index += 1
+        full_path = f"{name}_{index}{extension}"
     try:
-        full_path = file.filename
-        name, extension = os.path.splitext(file.filename)
-        index = 0
-        while is_file_exists(full_path):
-            index += 1
-            full_path = f"{name}_{index}{extension}"
         obj: ObjectWriteResult = minio_client.put_object(
-            minio_cred.bucket_name,
-            full_path, file.file, file.size
+            minio_cred.bucket_name, full_path, file.file, file.size
         )
-        return FileUploadedScheme(
-            url=f"/storage/download/{quote(obj.object_name)}"
-        )
-    except S3Error as e:
+    except Exception as e:
         raise HTTPException(409, f"Failed to upload file: {str(e)}")
+    return FileUploadedScheme(
+        url=f"/storage/download/{quote(obj.object_name)}"
+    )
 
 
 async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
@@ -61,14 +60,11 @@ async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
 def download_file(filename: str):
     if not is_file_exists(filename):
         raise HTTPException(404, "File not found")
-    try:
-        return StreamingResponse(
-            file_stream_generator(f"{filename}"),
-            media_type="application/octet-stream",
-            headers={"Content-Disposition": f"attachment; filename={filename}"}
-        )
-    except ValueError as e:
-        raise HTTPException(404, f"File not found: {str(e)}")
+    return StreamingResponse(
+        file_stream_generator(f"{filename}"),
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 
 @router.get("/list", response_model=list[FileUploadedScheme])
@@ -83,5 +79,8 @@ def list_files():
 def delete_file(filename: str, user_data: User = Depends(get_current_user)):
     if not is_file_exists(filename):
         raise HTTPException(404, "File not found")
-    minio_client.remove_object(minio_cred.bucket_name, filename)
+    try:
+        minio_client.remove_object(minio_cred.bucket_name, filename)
+    except Exception as e:
+        raise HTTPException(409, f"Failed to delete file: {str(e)}")
     return Response(status_code=200)
