@@ -3,13 +3,16 @@ import os
 from urllib.parse import quote
 from typing import AsyncGenerator, Any
 from fastapi import APIRouter, File, UploadFile, HTTPException
+from fastapi.params import Depends
 from fastapi.responses import StreamingResponse, Response
 from minio.datatypes import BaseHTTPResponse
 from minio.error import S3Error
 from minio.helpers import ObjectWriteResult
 
 from app.schemas.storage import FileUploadedScheme
+from app.schemas.users import User
 from app.settings import minio_client, minio_cred
+from app.utils.auth import get_current_user
 
 
 router = APIRouter(
@@ -25,9 +28,8 @@ def is_file_exists(path_to_object: str) -> bool:
         return False
 
 
-@router.post("/{user_id}", response_model=FileUploadedScheme)
-def upload_file(user_id: int, file: UploadFile = File()):
-    # TODO: User is owner checking
+@router.post("/", response_model=FileUploadedScheme, summary="Uploads new file. Privileged users only.")
+def upload_file(file: UploadFile = File(), user_data: User = Depends(get_current_user)):
     try:
         full_path = file.filename
         name, extension = os.path.splitext(file.filename)
@@ -78,9 +80,8 @@ def list_files():
     ]
 
 
-@router.delete("/{user_id}/{filename}", status_code=200)
-def delete_file(user_id: int, filename: str):
-    # TODO: User is owner checking
+@router.delete("{filename}", status_code=200, summary="Deletes file. Privileged users only.")
+def delete_file(filename: str, user_data: User = Depends(get_current_user)):
     if not is_file_exists(filename):
         raise HTTPException(404, "File not found")
     minio_client.remove_object(minio_cred.bucket_name, filename)
