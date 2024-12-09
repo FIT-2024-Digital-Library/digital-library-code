@@ -28,7 +28,7 @@ def is_file_exists(path_to_object: str) -> bool:
 
 
 @router.post("/", response_model=FileUploadedScheme, summary="Uploads new file. Privileged users only.")
-def upload_file(file: UploadFile = File(), user_data: User = Depends(get_current_user)):
+def upload_file(file: UploadFile = File(...), user_data: User = Depends(get_current_user)):
     full_path = file.filename
     name, extension = os.path.splitext(file.filename)
     index = 0
