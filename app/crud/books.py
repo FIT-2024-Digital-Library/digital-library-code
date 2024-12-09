@@ -2,9 +2,8 @@ from datetime import date
 from sqlalchemy import select, insert, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.authors import get_existent_or_create_author_in_db, get_author_from_db, get_authors_from_db
-from app.crud.genres import get_genre_from_db, get_existent_or_create_genre_in_db, get_genres_from_db
-from app.settings import async_session_maker
+from app.crud.authors import get_existent_or_create_author_in_db, get_authors_from_db
+from app.crud.genres import get_existent_or_create_genre_in_db, get_genres_from_db
 from app.models import book_table
 from app.schemas import BookCreate, GenreCreate, AuthorCreate
 

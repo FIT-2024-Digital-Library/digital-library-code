@@ -9,8 +9,7 @@ from minio.datatypes import BaseHTTPResponse
 from minio.error import S3Error
 from minio.helpers import ObjectWriteResult
 
-from app.schemas.storage import FileUploadedScheme
-from app.schemas.users import User
+from app.schemas import FileUploadedScheme, User
 from app.settings import minio_client, minio_cred
 from app.utils.auth import get_current_user
 

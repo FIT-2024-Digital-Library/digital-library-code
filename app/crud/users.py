@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import user_table
 from app.schemas import UserRegister, UserLogin
-from app.settings import async_session_maker
 from app.utils import get_password_hash, verify_password
 
 

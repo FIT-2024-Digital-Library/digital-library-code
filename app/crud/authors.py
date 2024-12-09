@@ -2,7 +2,6 @@ from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.settings import async_session_maker
 from app.models import author_table
 from app.schemas import AuthorCreate
 from app.utils import CrudException
