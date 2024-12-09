@@ -55,9 +55,10 @@ async def get_book_from_db(session: AsyncSession, book_id: int):
 
 async def create_book_in_db(session: AsyncSession, book: BookCreate):
     book_dict = book.model_dump()
-    genre_creation_model = GenreCreate(name=book_dict['genre'])
-    genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
-    book_dict['genre'] = genre_id
+    if book_dict['genre']:
+        genre_creation_model = GenreCreate(name=book_dict['genre'])
+        genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
+        book_dict['genre'] = genre_id
 
     author_creation_model = AuthorCreate(name=book_dict['author'])
     author_id = await get_existent_or_create_author_in_db(session, author_creation_model)
@@ -76,7 +77,10 @@ async def update_book_in_db(session: AsyncSession, book_id: int, book: BookCreat
     book_dict = book.model_dump()
     genre_creation_model = GenreCreate(name=book_dict['genre'])
     genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
-    book_dict['genre'] = genre_id
+    if book_dict['genre']:
+        genre_creation_model = GenreCreate(name=book_dict['genre'])
+        genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
+        book_dict['genre'] = genre_id
 
     author_creation_model = AuthorCreate(name=book_dict['author'])
     author_id = await get_existent_or_create_author_in_db(session, author_creation_model)

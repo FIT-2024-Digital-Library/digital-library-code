@@ -1,7 +1,15 @@
+from enum import Enum
+
 from pydantic import Field, EmailStr
 from .base import CamelCaseBaseModel
 
 __all__ = ["User", "UserLogin", "UserLogined", "UserRegister"]
+
+
+class PrivilegesEnum(str, Enum):
+    BASIC = "basic"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
 
 
 class UserRegister(CamelCaseBaseModel):
@@ -19,10 +27,10 @@ class User(CamelCaseBaseModel):
     id: int
     email: EmailStr = Field(description="Электронная почта")
     name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
-    privileges: str
+    privileges: PrivilegesEnum
 
 
 class UserLogined(CamelCaseBaseModel):
     email: EmailStr = Field(description="Электронная почта")
     name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
-    privileges: str
+    privileges: PrivilegesEnum

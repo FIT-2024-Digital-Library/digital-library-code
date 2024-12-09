@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 db_metadata = MetaData()
 
-privileges_enum = ENUM("basic", "admin", name="privileges", metadata=db_metadata)
+privileges_enum = ENUM("basic", "admin", "moderator", name="privileges", metadata=db_metadata)
 
 user_table = Table(
     "user_table",

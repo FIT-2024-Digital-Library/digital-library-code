@@ -1,10 +1,11 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
 
-from app.crud.users import set_admin_role_for_user, find_user_by_id, get_users_from_db, update_user_in_db
+from app.crud.users import set_admin_role_for_user, find_user_by_id, get_users_from_db, update_user_in_db, \
+    delete_user_from_db
 from app.crud.users import register_user, login_user
 from app.schemas import UserRegister, UserLogin, User, UserLogined
 from app.settings import async_session_maker
-from app.utils.auth import create_access_token, get_current_user
+from app.utils.auth import create_access_token, get_current_user, get_current_admin_user
 
 router = APIRouter(
     prefix='/users',
@@ -62,8 +63,18 @@ async def update_user_by_id(user_id: int, user_data: UserRegister, User=Depends(
         return data
 
 
+@router.delete('/{user_id}/delete', response_model=UserLogined, summary='Deletes user by id')
+async def delete_user_by_id(user_id: int, User=Depends(get_current_admin_user)):
+    async with async_session_maker() as session:
+        data = await delete_user_from_db(session, user_id)
+        if data is None:
+            raise HTTPException(status_code=403, detail="User doesn't exist")
+        await session.commit()
+        return data
+
+
 @router.get('/{user_id}', response_model=UserLogined, summary='Returns user by id')
-async def get_user_by_id(user_id: int, User=Depends(get_current_user)):
+async def get_user_by_id(user_id: int, User=Depends(get_current_admin_user)):
     async with async_session_maker() as session:
         user = await find_user_by_id(session, user_id)
         if user is None:
@@ -72,7 +83,7 @@ async def get_user_by_id(user_id: int, User=Depends(get_current_user)):
 
 
 @router.get('/', response_model=list[UserLogined], summary='Returns all users')
-async def get_users(User=Depends(get_current_user)):
+async def get_users(User=Depends(get_current_admin_user)):
     async with async_session_maker() as session:
         data = await get_users_from_db(session)
         return data

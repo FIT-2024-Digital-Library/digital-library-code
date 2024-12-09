@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import user_table
 from app.schemas import UserRegister, UserLogin
+from app.schemas.users import PrivilegesEnum
 from app.utils import get_password_hash, verify_password
 
 
@@ -77,7 +78,6 @@ async def update_user_in_db(session: AsyncSession, user_id: int, user_data: User
     user_dict = user_data.model_dump()
 
     user_dict["password_hash"] = get_password_hash(user_data.password)
-    user_dict['privileges'] = "basic"
     user_dict.pop("password")
     query = update(user_table).where(user_table.c.id == user_id).values(**user_dict)
     await session.execute(query)
@@ -91,7 +91,7 @@ async def set_admin_role_for_user(session: AsyncSession, user_id: int):
     if user is None:
         raise HTTPException(status_code=403, detail="User doesn't exist")
 
-    query = update(user_table).where(user_table.c.id == user_id).values(**{'privileges': 'admin'})
+    query = update(user_table).where(user_table.c.id == user_id).values(**{'privileges': PrivilegesEnum.ADMIN})
     await session.execute(query)
     user = await find_user_by_id(session, user_id)
     return user
