@@ -34,7 +34,7 @@ book_table = Table(
     db_metadata,
     Column("id", Integer, primary_key=True),
     Column("title", String(50)),
-    Column("author", ForeignKey(author_table.c.id), nullable=True),
+    Column("author", ForeignKey(author_table.c.id)),
     Column("genre", ForeignKey(genre_table.c.id), nullable=True),
     Column("published_date", Date, nullable=True),
     Column("description", String, nullable=True),
