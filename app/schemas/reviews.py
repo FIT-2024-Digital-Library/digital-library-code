@@ -4,12 +4,15 @@ from pydantic import Field
 
 from .base import CamelCaseBaseModel
 
-__all__ = ["ReviewCreate", "Review"]
+__all__ = ["ReviewUpdate", "ReviewCreate", "Review"]
 
 
-class ReviewCreate(CamelCaseBaseModel):
+class ReviewUpdate(CamelCaseBaseModel):
     mark: int = Field(ge=1, le=5)
     text: str
+
+
+class ReviewCreate(ReviewUpdate):
     book_id: int
 
 

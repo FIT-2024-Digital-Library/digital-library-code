@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.books import get_book_from_db
 from app.models import review_table
-from app.schemas import Review, ReviewCreate
+from app.schemas import Review, ReviewCreate, ReviewUpdate
 from app.utils import CrudException
 
 
@@ -43,3 +43,32 @@ async def create_review_in_db(session: AsyncSession, user_id: int, review_data: 
     )
     await session.commit()
     return Review(**result.mappings().first())
+
+
+async def update_review_in_db(session: AsyncSession, review_id: int, user_id: int, review_data: ReviewUpdate) -> Review:
+    old_review = await get_review_by_id(session, review_id)
+    if old_review is None:
+        raise ValueError("Review not found")
+    if old_review.author_id is not user_id:
+        raise ValueError("It's not your review")
+    result = await session.execute(
+        update(review_table)
+        .where(review_table.c.id == review_id)
+        .values(last_edit_date=datetime.date.today(), **review_data.model_dump())
+        .returning(review_table.c[*Review.model_fields])
+    )
+    await session.commit()
+    return Review(**result.mappings().first())
+
+
+async def delete_review_in_db(session: AsyncSession, review_id: int, user_id: int) -> Review:
+    review = await get_review_by_id(session, review_id)
+    if review is None:
+        raise ValueError("Review not found")
+    if review.author_id is not user_id:
+        raise ValueError("It's not your review")
+    await session.execute(
+        delete(review_table).where(review_table.c.id == review_id)
+    )
+    await session.commit()
+    return review

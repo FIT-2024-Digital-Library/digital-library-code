@@ -2,8 +2,8 @@ from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Query, HTTPException, Depends
 
-from app.crud.reviews import get_review_by_id, create_review_in_db
-from app.schemas import Review, ReviewCreate, User
+from app.crud.reviews import get_review_by_id, create_review_in_db, update_review_in_db, delete_review_in_db
+from app.schemas import Review, ReviewCreate, User, ReviewUpdate
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user, get_current_admin_user
 
@@ -22,7 +22,7 @@ async def get_review(review_id: int):
         return result
 
 
-@router.post('/create', response_model=Review, summary='Creates new book. Only for authorized users. One review from one user for one book')
+@router.post('/create', response_model=Review, summary='Creates new review. Only for authorized users. One review from one user for one book')
 async def create_review(review: ReviewCreate, user_data: User = Depends(get_current_user)):
     async with async_session_maker() as session:
         try:
@@ -32,23 +32,20 @@ async def create_review(review: ReviewCreate, user_data: User = Depends(get_curr
 
 
 
-# @router.put('/{book_id}/update', response_model=Review,
-#             summary='Updates book data. Only for authorized user with admin privilege')
-# async def update_review(book_id: int, book: ReviewCreate, user_data: User = Depends(get_current_user)):
-#     async with async_session_maker() as session:
-#         book = await update_book_in_db(session, book_id, book)
-#         if book is None:
-#             raise HTTPException(status_code=404, detail="Book not found")
-#         await session.commit()
-#         return book
-#
-#
-# @router.delete('/{book_id}/delete', response_model=Review,
-#                summary='Deletes book. Only for authorized user with admin privilege')
-# async def delete_review(book_id: int, user_data: User = Depends(get_current_user)):
-#     async with async_session_maker() as session:
-#         book = await delete_book_from_db(session, book_id)
-#         if book is None:
-#             raise HTTPException(status_code=404, detail="Book not found")
-#         await session.commit()
-#         return book
+@router.put('/{review_id}/update', response_model=Review, summary="Updates existing review. Only for reviews' owners")
+async def update_review(review_id: int, review: ReviewUpdate, user_data: User = Depends(get_current_user)):
+    async with async_session_maker() as session:
+        try:
+            return await update_review_in_db(session, review_id, user_data.id, review)
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+
+
+@router.delete('/{review_id}/delete', response_model=Review,
+               summary="Deletes existing review. Only for reviews' owners")
+async def delete_review(review_id: int, user_data: User = Depends(get_current_user)):
+    async with async_session_maker() as session:
+        try:
+            return await delete_review_in_db(session, review_id, user_data.id)
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail=str(e))
