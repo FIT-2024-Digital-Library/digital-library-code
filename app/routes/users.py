@@ -3,7 +3,7 @@ from fastapi import APIRouter, HTTPException, status, Response, Depends
 from app.crud.users import set_admin_role_for_user, find_user_by_id, get_users_from_db, update_user_in_db, \
     delete_user_from_db
 from app.crud.users import register_user, login_user
-from app.schemas import UserRegister, UserLogin, User
+from app.schemas import UserRegister, UserLogin, User, UserLogined
 from app.settings import async_session_maker
 from app.utils.auth import create_access_token, get_current_user, get_current_admin_user
 
@@ -33,14 +33,10 @@ async def login(response: Response, user_data: UserLogin):
         return data
 
 
-@router.post('/register', response_model=User, summary='Creates new user')
-async def register(response: Response, user_data: UserRegister):
+@router.post('/register', response_model=UserLogined, summary='Creates new user')
+async def register(user_data: UserRegister):
     async with async_session_maker() as session:
         data = await register_user(session, user_data)
-        access_token = create_access_token({"sub": str(data.id)})
-        response.set_cookie(key="users_access_token", value=access_token, httponly=True, secure=True, samesite='none')
-        data = dict(data)
-        data.pop('password_hash')
         await session.commit()
         return data
 
