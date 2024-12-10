@@ -11,11 +11,11 @@ from app.utils import CrudException
 
 
 async def get_review_by_id(session: AsyncSession, review_id: int) -> Review:
-    result = await session.execute((
+    result = (await session.execute((
         select(review_table.c[*Review.model_fields])
         .where(review_table.c.id == review_id)
-    ))
-    return Review(**result.mappings().first())
+    ))).mappings().first()
+    return None if result is None else Review(**result)
 
 
 async def create_review_in_db(session: AsyncSession, user_id: int, review_data: ReviewCreate) -> Review:
