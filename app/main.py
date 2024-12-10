@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import books, users, authors, genres, storage
+from app.routes import books, users, authors, genres, storage, reviews
 from app.utils import create_tables, close_connections
 
 
@@ -27,3 +27,4 @@ app.include_router(users.router)
 app.include_router(authors.router)
 app.include_router(genres.router)
 app.include_router(storage.router)
+app.include_router(reviews.router)

@@ -2,7 +2,8 @@ from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Query, HTTPException, Depends
 
-from app.schemas import Book, BookCreate, User
+from app.crud.reviews import get_review_by_id, create_review_in_db
+from app.schemas import Review, ReviewCreate, User
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user, get_current_admin_user
 
@@ -12,55 +13,42 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=List[Book], summary='Returns books using search parameters (all of them otherwise)')
-async def get_books(
-        title: Optional[str] = Query(None, description="Filter by book title"),
-        author: Optional[str] = Query(None, description="Filter by author"),
-        genre: Optional[str] = Query(None, description="Filter by name"),
-        published_date: Optional[date] = Query(None, description="Filter by publication date"),
-        description: Optional[str] = Query(None, description="Filter by description keyword"),
-        image_url: Optional[str] = Query(None, description="Filter by image\'s URL"),
-        pdf_url: Optional[str] = Query(None, description="Filter by PDF URL")
-):
+@router.get('/{review_id}', response_model=Review, summary='Returns review')
+async def get_review(review_id: int):
     async with async_session_maker() as session:
-        books = await get_books_from_db(session, title, author, genre, published_date, description, image_url, pdf_url)
-        return books
-
-
-@router.get('/{review_id}', response_model=Book, summary='Returns book data')
-async def get_book(review_id: int):
-    async with async_session_maker() as session:
-        result = await get_book_from_db(session, book_id)
+        result = await get_review_by_id(session, review_id)
         if result is None:
-            raise HTTPException(status_code=404, detail="Book not found")
+            raise HTTPException(status_code=404, detail="Review not found")
         return result
 
 
-@router.post('/create', response_model=int, summary='Creates new book. Only for authorized user with admin privilege')
-async def create_book(book: BookCreate, user_data: User = Depends(get_current_admin_user)):
+@router.post('/create', response_model=Review, summary='Creates new book. Only for authorized user with admin privilege')
+async def create_review(review: ReviewCreate, user_data: User = Depends(get_current_user)):
     async with async_session_maker() as session:
-        book_id = await create_book_in_db(session, book)
-        await session.commit()
-        return book_id
+        try:
+            return await create_review_in_db(session, user_data.id, review)
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail=str(e))
 
 
-@router.put('/{book_id}/update', response_model=Book,
-            summary='Updates book data. Only for authorized user with admin privilege')
-async def update_book(book_id: int, book: BookCreate, user_data: User = Depends(get_current_admin_user)):
-    async with async_session_maker() as session:
-        book = await update_book_in_db(session, book_id, book)
-        if book is None:
-            raise HTTPException(status_code=404, detail="Book not found")
-        await session.commit()
-        return book
 
-
-@router.delete('/{book_id}/delete', response_model=Book,
-               summary='Deletes book. Only for authorized user with admin privilege')
-async def delete_book(book_id: int, user_data: User = Depends(get_current_admin_user)):
-    async with async_session_maker() as session:
-        book = await delete_book_from_db(session, book_id)
-        if book is None:
-            raise HTTPException(status_code=404, detail="Book not found")
-        await session.commit()
-        return book
+# @router.put('/{book_id}/update', response_model=Review,
+#             summary='Updates book data. Only for authorized user with admin privilege')
+# async def update_review(book_id: int, book: ReviewCreate, user_data: User = Depends(get_current_user)):
+#     async with async_session_maker() as session:
+#         book = await update_book_in_db(session, book_id, book)
+#         if book is None:
+#             raise HTTPException(status_code=404, detail="Book not found")
+#         await session.commit()
+#         return book
+#
+#
+# @router.delete('/{book_id}/delete', response_model=Review,
+#                summary='Deletes book. Only for authorized user with admin privilege')
+# async def delete_review(book_id: int, user_data: User = Depends(get_current_user)):
+#     async with async_session_maker() as session:
+#         book = await delete_book_from_db(session, book_id)
+#         if book is None:
+#             raise HTTPException(status_code=404, detail="Book not found")
+#         await session.commit()
+#         return book

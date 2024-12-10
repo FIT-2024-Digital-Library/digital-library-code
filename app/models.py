@@ -47,6 +47,7 @@ review_table = Table(
     db_metadata,
     Column("id", Integer, primary_key=True),
     Column("author_id", ForeignKey(user_table.c.id)),
+    Column("book_id", ForeignKey(book_table.c.id)),
     Column("mark", Integer),
     Column("text", String, nullable=True),
     Column("last_edit_date", Date),
