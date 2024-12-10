@@ -10,6 +10,18 @@ from app.schemas import Review, ReviewCreate
 from app.utils import CrudException
 
 
+async def check_review_by_user_and_book(session: AsyncSession, user_id: int, book_id: int) -> bool:
+    """Returns true when there is review for specified combination of user and book ids"""
+    result = (await session.execute((
+        select(review_table)
+        .where(
+            review_table.c.author_id == user_id,
+            review_table.c.book_id == book_id
+        )
+    ))).scalar()
+    return result is not None
+
+
 async def get_review_by_id(session: AsyncSession, review_id: int) -> Review:
     result = (await session.execute((
         select(review_table.c[*Review.model_fields])
@@ -22,6 +34,8 @@ async def create_review_in_db(session: AsyncSession, user_id: int, review_data: 
     book = await get_book_from_db(session, review_data.book_id)
     if book is None:
         raise ValueError("Book for review not found")
+    if await check_review_by_user_and_book(session, user_id, book['id']):
+        raise ValueError("Only one review for book from one user")
     result = await session.execute(
         insert(review_table)
         .values(author_id=user_id, last_edit_date=datetime.date.today(), **review_data.model_dump())

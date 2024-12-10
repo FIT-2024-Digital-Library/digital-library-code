@@ -22,7 +22,7 @@ async def get_review(review_id: int):
         return result
 
 
-@router.post('/create', response_model=Review, summary='Creates new book. Only for authorized user with admin privilege')
+@router.post('/create', response_model=Review, summary='Creates new book. Only for authorized users. One review from one user for one book')
 async def create_review(review: ReviewCreate, user_data: User = Depends(get_current_user)):
     async with async_session_maker() as session:
         try:
