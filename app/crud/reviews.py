@@ -1,14 +1,12 @@
 import datetime
 
-from sqlalchemy import select, insert, delete, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, insert, delete, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.crud.books import get_book_from_db
 from app.models import review_table
 from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme
-from app.utils import CrudException
 
 
 async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme) -> List[Review]:
@@ -19,6 +17,21 @@ async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme
         query = query.where(review_table.c.author_id == filters.user_id)
     result = await session.execute(query)
     return [Review(**review) for review in result.mappings().all()]
+
+
+async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> float:
+    book = await get_book_from_db(session, book_id)
+    if book is None:
+        raise ValueError("Book not found")
+    result = await session.execute(
+        select(review_table.c.mark).where(review_table.c.book_id == book_id)
+    )
+    count = 0.0
+    _sum = 0.0
+    for review in result.mappings().all():
+        _sum += review['mark']
+        count += 1.0
+    return _sum / count if count > 0 else 0
 
 
 async def check_review_by_user_and_book(session: AsyncSession, user_id: int, book_id: int) -> bool:
