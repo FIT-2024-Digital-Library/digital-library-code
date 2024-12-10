@@ -3,11 +3,28 @@ import datetime
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 from app.crud.books import get_book_from_db
 from app.models import review_table
-from app.schemas import Review, ReviewCreate, ReviewUpdate
+from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme
 from app.utils import CrudException
+
+
+async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme) -> List[Review]:
+    # print()
+    # print(filters.model_dump())
+    # print()
+    query = select(review_table.c[*Review.model_fields]).limit(filters.limit).offset(filters.offset)
+    if filters.book_id is not None:
+        query = query.where(review_table.c.book_id == filters.book_id)
+    if filters.user_id is not None:
+        query = query.where(review_table.c.author_id == filters.user_id)
+    result = await session.execute(query)
+    print(result)
+    # print([Review(**review) for review in ])
+    print(result.mappings().all())
+    return []
 
 
 async def check_review_by_user_and_book(session: AsyncSession, user_id: int, book_id: int) -> bool:

@@ -1,9 +1,9 @@
-from datetime import date
-from typing import Optional, List
+from typing import List, Annotated
 from fastapi import APIRouter, Query, HTTPException, Depends
 
-from app.crud.reviews import get_review_by_id, create_review_in_db, update_review_in_db, delete_review_in_db
-from app.schemas import Review, ReviewCreate, User, ReviewUpdate
+from app.crud.reviews import get_review_by_id, create_review_in_db, update_review_in_db, delete_review_in_db, \
+    get_reviews_in_db
+from app.schemas import User, ReviewsFiltersScheme, Review, ReviewCreate, ReviewUpdate
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user, get_current_admin_user
 
@@ -11,6 +11,16 @@ router = APIRouter(
     prefix='/reviews',
     tags=['review']
 )
+
+
+@router.get('/', response_model=List[Review], summary='Returns reviews maybe filtered by book and user')
+async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]):
+    async with async_session_maker() as session:
+        try:
+            return await get_reviews_in_db(session, filters)
+        except ValueError as e:
+            raise HTTPException(status_code=403, detail=str(e))
+
 
 
 @router.get('/{review_id}', response_model=Review, summary='Returns review')
