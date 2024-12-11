@@ -9,10 +9,10 @@ __all__ = ["ReviewsFiltersScheme", "ReviewUpdate", "ReviewCreate", "Review"]
 
 
 class ReviewsFiltersScheme(CamelCaseBaseModel):
-    limit: Optional[int] = Field(100, gt=0, le=100)
-    offset: Optional[int] = Field(0, ge=0)
-    book_id: Optional[int | None] = None
-    user_id: Optional[int | None] = None
+    limit: int = Field(100, gt=0, le=100)
+    offset: int = Field(0, ge=0)
+    book_id: Optional[int] = None
+    owner_id: Optional[int] = None
 
 
 class ReviewUpdate(CamelCaseBaseModel):
@@ -26,5 +26,5 @@ class ReviewCreate(ReviewUpdate):
 
 class Review(ReviewCreate):
     id: int
-    author_id: int
+    owner_id: int
     last_edit_date: date

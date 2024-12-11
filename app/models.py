@@ -46,7 +46,7 @@ review_table = Table(
     "review_table",
     db_metadata,
     Column("id", Integer, primary_key=True),
-    Column("author_id", ForeignKey(user_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
+    Column("owner_id", ForeignKey(user_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
     Column("book_id", ForeignKey(book_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
     Column("mark", Integer),
     Column("text", String, nullable=True),
