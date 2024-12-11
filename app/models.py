@@ -41,3 +41,14 @@ book_table = Table(
     Column("image_url", String, nullable=True),
     Column("pdf_url", String)
 )
+
+review_table = Table(
+    "review_table",
+    db_metadata,
+    Column("id", Integer, primary_key=True),
+    Column("owner_id", ForeignKey(user_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
+    Column("book_id", ForeignKey(book_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
+    Column("mark", Integer),
+    Column("text", String, nullable=True),
+    Column("last_edit_date", Date),
+)
