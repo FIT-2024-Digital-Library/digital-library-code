@@ -2,7 +2,7 @@ services:
   postgres:
     image: postgres:17.0-alpine
     container_name: library-postgres
-    env_file: $RECALL_PROJECT_PATH/config/postgres.env
+    env_file: $PROJECT_PATH/config/postgres.env
     ports:
       - ${POSTGRES_HOST_PORT}:5432
     volumes:
@@ -22,17 +22,17 @@ services:
         restart: true
     image: minio/mc:latest
     env_file:
-      - $RECALL_PROJECT_PATH/config/minio-server.env
-      - $RECALL_PROJECT_PATH/config/minio-client.env
+      - $PROJECT_PATH/config/minio-server.env
+      - $PROJECT_PATH/config/minio-client.env
     volumes:
       - minio-volume:/data
-      - $RECALL_PROJECT_PATH/config/minio-setup.sh:/setup.sh
+      - $PROJECT_PATH/config/minio-setup.sh:/setup.sh
     entrypoint: bash /setup.sh
   minio:
     container_name: library-minio
     image: minio/minio:latest
     env_file:
-      - $RECALL_PROJECT_PATH/config/minio-server.env
+      - $PROJECT_PATH/config/minio-server.env
     ports:
       - "${MINIO_PORT}:9000"
       - "${MINIO_BROWSER_PORT}:9001"
