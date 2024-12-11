@@ -9,14 +9,14 @@ from app.models import review_table
 from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme
 
 
-async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme) -> List[Review]:
+async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme) -> List[int]:
     query = select(review_table.c[*Review.model_fields]).limit(filters.limit).offset(filters.offset)
     if filters.book_id is not None:
         query = query.where(review_table.c.book_id == filters.book_id)
     if filters.owner_id is not None:
         query = query.where(review_table.c.owner_id == filters.owner_id)
     result = await session.execute(query)
-    return [Review(**review) for review in result.mappings().all()]
+    return [review['id'] for review in result.mappings().all()]
 
 
 async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> float:
@@ -89,7 +89,7 @@ async def delete_review_in_db(session: AsyncSession, review_id: int, owner_id: i
     review = await get_review_by_id(session, review_id)
     if review is None:
         raise ValueError("Review not found")
-    if review.author_id is not owner_id:
+    if review.owner_id is not owner_id:
         raise ValueError("It's not your review")
     await session.execute(
         delete(review_table).where(review_table.c.id == review_id)

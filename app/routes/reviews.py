@@ -13,8 +13,8 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=List[Review], summary='Returns reviews maybe filtered by book and user')
-async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]):
+@router.get('/', response_model=List[int], summary="Returns reviews's ids maybe filtered by book and user")
+async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]) -> List[int]:
     async with async_session_maker() as session:
         try:
             return await get_reviews_in_db(session, filters)
@@ -24,7 +24,7 @@ async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]):
 
 
 @router.get('/{review_id}', response_model=Review, summary='Returns review')
-async def get_review(review_id: int):
+async def get_review(review_id: int) -> Review:
     async with async_session_maker() as session:
         result = await get_review_by_id(session, review_id)
         if result is None:
@@ -33,7 +33,7 @@ async def get_review(review_id: int):
 
 
 @router.get('/average/{book_id}', response_model=float, summary='Returns average mark for book')
-async def get_average_mark(book_id: int):
+async def get_average_mark(book_id: int) -> float:
     async with async_session_maker() as session:
         try:
             return await get_average_mark_in_db(session, book_id)
@@ -42,7 +42,7 @@ async def get_average_mark(book_id: int):
 
 
 @router.post('/create', response_model=Review, summary='Creates new review. Only for authorized users. One review from one user for one book')
-async def create_review(review: ReviewCreate, user_data: User = Depends(get_current_user)):
+async def create_review(review: ReviewCreate, user_data: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
             return await create_review_in_db(session, user_data.id, review)
@@ -52,7 +52,7 @@ async def create_review(review: ReviewCreate, user_data: User = Depends(get_curr
 
 
 @router.put('/{review_id}/update', response_model=Review, summary="Updates existing review. Only for reviews' owners")
-async def update_review(review_id: int, review: ReviewUpdate, user_data: User = Depends(get_current_user)):
+async def update_review(review_id: int, review: ReviewUpdate, user_data: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
             return await update_review_in_db(session, review_id, user_data.id, review)
@@ -62,7 +62,7 @@ async def update_review(review_id: int, review: ReviewUpdate, user_data: User = 
 
 @router.delete('/{review_id}/delete', response_model=Review,
                summary="Deletes existing review. Only for reviews' owners")
-async def delete_review(review_id: int, user_data: User = Depends(get_current_user)):
+async def delete_review(review_id: int, user_data: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
             return await delete_review_in_db(session, review_id, user_data.id)
