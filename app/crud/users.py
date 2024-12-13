@@ -86,12 +86,12 @@ async def update_user_in_db(session: AsyncSession, user_id: int, user_data: User
     return user
 
 
-async def set_admin_role_for_user(session: AsyncSession, user_id: int):
+async def set_role_for_user(session: AsyncSession, privilege: PrivilegesEnum, user_id: int):
     user = await find_user_by_id(session, user_id)
     if user is None:
         raise HTTPException(status_code=403, detail="User doesn't exist")
 
-    query = update(user_table).where(user_table.c.id == user_id).values(**{'privileges': PrivilegesEnum.ADMIN})
+    query = update(user_table).where(user_table.c.id == user_id).values(**{'privileges': privilege})
     await session.execute(query)
     user = await find_user_by_id(session, user_id)
     return user

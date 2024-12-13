@@ -5,7 +5,7 @@ from app.crud.reviews import get_review_by_id, create_review_in_db, update_revie
     get_reviews_in_db, get_average_mark_in_db
 from app.schemas import User, ReviewsFiltersScheme, Review, ReviewCreate, ReviewUpdate
 from app.settings import async_session_maker
-from app.utils.auth import get_current_user, get_current_admin_user
+from app.utils.auth import get_current_user
 
 router = APIRouter(
     prefix='/reviews',

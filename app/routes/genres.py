@@ -4,9 +4,10 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from app.crud.genres import get_genre_from_db, get_genres_from_db, create_genre_in_db, \
     delete_genre_from_db, update_genre_in_db
 from app.schemas import Genre, GenreCreate
+from app.schemas.users import PrivilegesEnum
 from app.settings import async_session_maker
 from app.utils import CrudException
-from app.utils.auth import get_current_user, get_current_admin_user
+from app.utils.auth import get_current_user, user_has_permissions
 
 router = APIRouter(
     prefix='/genres',
@@ -33,7 +34,7 @@ async def get_genre(genre_id: int):
 
 
 @router.post('/create', response_model=int, summary='Creates genres')
-async def create_genre(genre: GenreCreate, user_data=Depends(get_current_admin_user)):
+async def create_genre(genre: GenreCreate, user_data=Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
     async with async_session_maker() as session:
         key = await get_genres_from_db(session, name=genre.name)
         if len(key) == 0:
@@ -45,7 +46,7 @@ async def create_genre(genre: GenreCreate, user_data=Depends(get_current_admin_u
 
 
 @router.delete('/{genre_id}/delete', response_model=Genre, summary='Deletes genres')
-async def delete_genre(genre_id: int, user_data=Depends(get_current_admin_user)):
+async def delete_genre(genre_id: int, user_data=Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
     async with async_session_maker() as session:
         try:
             genre = await delete_genre_from_db(session, genre_id)
@@ -58,7 +59,7 @@ async def delete_genre(genre_id: int, user_data=Depends(get_current_admin_user))
 
 
 @router.put('/{genre_id}/update', response_model=Genre, summary='Updates genres')
-async def update_genre(genre_id: int, genre: GenreCreate, user_data=Depends(get_current_admin_user)):
+async def update_genre(genre_id: int, genre: GenreCreate, user_data=Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
     async with async_session_maker() as session:
         try:
             genre = await update_genre_in_db(session, genre_id, genre)

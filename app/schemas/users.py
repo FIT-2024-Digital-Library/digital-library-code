@@ -8,8 +8,34 @@ __all__ = ["User", "UserLogin", "UserRegister", "UserLogined"]
 
 class PrivilegesEnum(str, Enum):
     BASIC = "basic"
-    ADMIN = "admin"
     MODERATOR = "moderator"
+    ADMIN = "admin"
+
+    _role_hierarchy = {
+        BASIC: 1,
+        MODERATOR: 2,
+        ADMIN: 3,
+    }
+
+    def __lt__(self, other):
+        if isinstance(other, PrivilegesEnum):
+            return self._role_hierarchy[self] < self._role_hierarchy[other]
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, PrivilegesEnum):
+            return self._role_hierarchy[self] <= self._role_hierarchy[other]
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, PrivilegesEnum):
+            return self._role_hierarchy[self] > self._role_hierarchy[other]
+        return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, PrivilegesEnum):
+            return self._role_hierarchy[self] >= self._role_hierarchy[other]
+        return NotImplemented
 
 
 class UserRegister(CamelCaseBaseModel):
