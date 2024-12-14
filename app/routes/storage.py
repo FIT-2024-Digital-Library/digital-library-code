@@ -13,7 +13,6 @@ from app.schemas import FileUploadedScheme, User
 from app.settings import minio_client, minio_cred
 from app.utils.auth import get_current_user
 
-
 router = APIRouter(
     prefix='/storage',
     tags=['storage']

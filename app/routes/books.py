@@ -21,12 +21,10 @@ async def get_books(
         author: Optional[str] = Query(None, description="Filter by author"),
         genre: Optional[str] = Query(None, description="Filter by name"),
         published_date: Optional[date] = Query(None, description="Filter by publication date"),
-        description: Optional[str] = Query(None, description="Filter by description keyword"),
-        image_url: Optional[str] = Query(None, description="Filter by image\'s URL"),
-        pdf_url: Optional[str] = Query(None, description="Filter by PDF URL")
+        description: Optional[str] = Query(None, description="Filter by description keyword")
 ):
     async with async_session_maker() as session:
-        books = await get_books_from_db(session, title, author, genre, published_date, description, image_url, pdf_url)
+        books = await get_books_from_db(session, title, author, genre, published_date, description)
         return books
 
 
@@ -39,8 +37,10 @@ async def get_book(book_id: int):
         return result
 
 
-@router.post('/create', response_model=int, summary='Creates new book. Only for authorized user with admin privilege')
-async def create_book(book: BookCreate, user_data: User = Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
+@router.post('/create', response_model=int,
+             summary='Creates new book. Only for authorized user with moderator privilege')
+async def create_book(book: BookCreate,
+                      user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()
@@ -49,7 +49,8 @@ async def create_book(book: BookCreate, user_data: User = Depends(lambda: user_h
 
 @router.put('/{book_id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin privilege')
-async def update_book(book_id: int, book: BookCreate, user_data: User = Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
+async def update_book(book_id: int, book: BookCreate,
+                      user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     async with async_session_maker() as session:
         book = await update_book_in_db(session, book_id, book)
         if book is None:
@@ -60,7 +61,7 @@ async def update_book(book_id: int, book: BookCreate, user_data: User = Depends(
 
 @router.delete('/{book_id}/delete', response_model=Book,
                summary='Deletes book. Only for authorized user with admin privilege')
-async def delete_book(book_id: int, user_data: User = Depends(lambda: user_has_permissions(PrivilegesEnum.MODERATOR))):
+async def delete_book(book_id: int, user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     async with async_session_maker() as session:
         book = await delete_book_from_db(session, book_id)
         if book is None:

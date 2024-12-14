@@ -49,7 +49,7 @@ async def logout_user(response: Response):
 
 
 @router.post('/{user_id}/set_privilege', response_model=User, summary='Logs user in')
-async def get_admin_role(user_id: int, privilege: PrivilegesEnum, User=Depends(get_current_user)):
+async def get_admin_role(user_id: int, privilege: PrivilegesEnum, user_creds: User = Depends(get_current_user)):
     async with async_session_maker() as session:
         data = await set_role_for_user(session, privilege, user_id)
         await session.commit()
@@ -57,34 +57,44 @@ async def get_admin_role(user_id: int, privilege: PrivilegesEnum, User=Depends(g
 
 
 @router.put('/{user_id}/update', response_model=User, summary='Updates user by id')
-async def update_user_by_id(user_id: int, user_data: UserRegister, User=Depends(get_current_user)):
-    async with async_session_maker() as session:
-        data = await update_user_in_db(session, user_id, user_data)
-        await session.commit()
-        return data
+async def update_user_by_id(user_id: int, user_data: UserRegister, user_creds: User = Depends(get_current_user)):
+    if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
+        async with async_session_maker() as session:
+            data = await update_user_in_db(session, user_id, user_data)
+            await session.commit()
+            return data
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='No permission')
 
 
 @router.delete('/{user_id}/delete', response_model=User, summary='Deletes user by id')
-async def delete_user_by_id(user_id: int, User=Depends(lambda: user_has_permissions(PrivilegesEnum.ADMIN))):
-    async with async_session_maker() as session:
-        data = await delete_user_from_db(session, user_id)
-        if data is None:
-            raise HTTPException(status_code=403, detail="User doesn't exist")
-        await session.commit()
-        return data
+async def delete_user_by_id(user_id: int,
+                            user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
+    if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
+        async with async_session_maker() as session:
+            data = await delete_user_from_db(session, user_id)
+            if data is None:
+                raise HTTPException(status_code=403, detail="User doesn't exist")
+            await session.commit()
+            return data
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='No permission')
 
 
 @router.get('/{user_id}', response_model=User, summary='Returns user by id')
-async def get_user_by_id(user_id: int, User=Depends(lambda: user_has_permissions(PrivilegesEnum.ADMIN))):
-    async with async_session_maker() as session:
-        user = await find_user_by_id(session, user_id)
-        if user is None:
-            raise HTTPException(status_code=403, detail="User doesn't exist")
-        return user
+async def get_user_by_id(user_id: int, user_creds: User = Depends(get_current_user)):
+    if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
+        async with async_session_maker() as session:
+            user = await find_user_by_id(session, user_id)
+            if user is None:
+                raise HTTPException(status_code=403, detail="User doesn't exist")
+            return user
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='No permission')
 
 
 @router.get('/', response_model=list[User], summary='Returns all users')
-async def get_users(User=Depends(lambda: user_has_permissions(PrivilegesEnum.ADMIN))):
+async def get_users(user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
     async with async_session_maker() as session:
         data = await get_users_from_db(session)
         return data

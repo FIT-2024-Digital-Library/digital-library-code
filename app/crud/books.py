@@ -14,9 +14,7 @@ async def get_books_from_db(
         author: str = None,
         genre: str = None,
         published_date: date = None,
-        description: str = None,
-        image_url: str = None,
-        pdf_url: str = None):
+        description: str = None):
     query = select(book_table)
     if title is not None:
         query = query.where(book_table.c.title.ilike(f"%{title}%"))
@@ -36,12 +34,6 @@ async def get_books_from_db(
         query = query.where(book_table.c.published_date == published_date)
     if description is not None:
         query = query.where(book_table.c.description.ilike(f"%{description}%"))
-    if pdf_url is not None:
-        query = query.where(book_table.c.pdf_url == pdf_url)
-
-    if image_url is not None:
-        query = query.where(book_table.c.image_url == image_url)
-
     result = await session.execute(query)
     books = result.mappings().all()
     return books
