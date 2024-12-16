@@ -48,8 +48,8 @@ async def logout_user(response: Response):
     return {'message': 'You successfully logged out'}
 
 
-@router.post('/{user_id}/set_privilege', response_model=User, summary='Logs user in')
-async def get_admin_role(user_id: int, privilege: PrivilegesEnum, user_creds: User = Depends(get_current_user)):
+@router.post('/{user_id}/set_privilege', response_model=User, summary='Sets the privilege for user')
+async def get_privilege_for_user(user_id: int, privilege: PrivilegesEnum, user_creds: User = Depends(get_current_user)):
     async with async_session_maker() as session:
         data = await set_role_for_user(session, privilege, user_id)
         await session.commit()
@@ -57,7 +57,8 @@ async def get_admin_role(user_id: int, privilege: PrivilegesEnum, user_creds: Us
 
 
 @router.put('/{user_id}/update', response_model=User, summary='Updates user by id')
-async def update_user_by_id(user_id: int, user_data: UserRegister, user_creds: User = Depends(get_current_user)):
+async def update_user_by_id(user_id: int, user_data: UserRegister,
+                            user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
     if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
         async with async_session_maker() as session:
             data = await update_user_in_db(session, user_id, user_data)
