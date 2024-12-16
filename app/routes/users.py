@@ -82,15 +82,12 @@ async def delete_user_by_id(user_id: int,
 
 
 @router.get('/{user_id}', response_model=User, summary='Returns user by id')
-async def get_user_by_id(user_id: int, user_creds: User = Depends(get_current_user)):
-    if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
-        async with async_session_maker() as session:
-            user = await find_user_by_id(session, user_id)
-            if user is None:
-                raise HTTPException(status_code=403, detail="User doesn't exist")
-            return user
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='No permission')
+async def get_user_by_id(user_id: int):
+    async with async_session_maker() as session:
+        user = await find_user_by_id(session, user_id)
+        if user is None:
+            raise HTTPException(status_code=403, detail="User doesn't exist")
+        return user
 
 
 @router.get('/', response_model=list[User], summary='Returns all users')
