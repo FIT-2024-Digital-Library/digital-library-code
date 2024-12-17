@@ -5,6 +5,7 @@ from fastapi import APIRouter, Query, HTTPException, Depends
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
 from app.schemas import Book, BookCreate, User
+from app.schemas.books import BookUpdate
 from app.schemas.users import PrivilegesEnum
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user, user_has_permissions
@@ -49,7 +50,7 @@ async def create_book(book: BookCreate,
 
 @router.put('/{book_id}/update', response_model=Book,
             summary='Updates book data. Only for authorized user with admin privilege')
-async def update_book(book_id: int, book: BookCreate,
+async def update_book(book_id: int, book: BookUpdate,
                       user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     async with async_session_maker() as session:
         book = await update_book_in_db(session, book_id, book)

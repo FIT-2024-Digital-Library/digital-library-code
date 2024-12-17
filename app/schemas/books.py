@@ -24,3 +24,13 @@ class BookCreate(CamelCaseBaseModel):
     description: Optional[str] = None
     image_url: Optional[str] = None
     pdf_url: str
+
+
+class BookUpdate(CamelCaseBaseModel):
+    title: Optional[str] = None
+    author: Optional[str] = None
+    genre: Optional[str] = None
+    published_date: Optional[date] = None
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    pdf_url: Optional[str] = None

@@ -6,6 +6,7 @@ from app.crud.authors import get_existent_or_create_author_in_db, get_authors_fr
 from app.crud.genres import get_existent_or_create_genre_in_db, get_genres_from_db
 from app.models import book_table
 from app.schemas import BookCreate, GenreCreate, AuthorCreate
+from app.schemas.books import BookUpdate
 
 
 async def get_books_from_db(
@@ -61,22 +62,25 @@ async def create_book_in_db(session: AsyncSession, book: BookCreate):
     return result.inserted_primary_key[0]
 
 
-async def update_book_in_db(session: AsyncSession, book_id: int, book: BookCreate):
+async def update_book_in_db(session: AsyncSession, book_id: int, book: BookUpdate):
     book_in_db = await get_book_from_db(session, book_id)
     if book_in_db is None:
         return None
 
     book_dict = book.model_dump()
-    genre_creation_model = GenreCreate(name=book_dict['genre'])
-    genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
+
     if book_dict['genre']:
         genre_creation_model = GenreCreate(name=book_dict['genre'])
         genre_id = await get_existent_or_create_genre_in_db(session, genre_creation_model)
         book_dict['genre'] = genre_id
 
-    author_creation_model = AuthorCreate(name=book_dict['author'])
-    author_id = await get_existent_or_create_author_in_db(session, author_creation_model)
-    book_dict['author'] = author_id
+    if book_dict['author']:
+        author_creation_model = AuthorCreate(name=book_dict['author'])
+        author_id = await get_existent_or_create_author_in_db(session, author_creation_model)
+        book_dict['author'] = author_id
+    for key, value in book_dict.items():
+        if book_dict[key] is None:
+            book_dict[key] = book_in_db[key]
 
     query = update(book_table).where(book_table.c.id == book_id).values(**book_dict)
     await session.execute(query)

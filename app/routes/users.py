@@ -4,7 +4,7 @@ from app.crud.users import find_user_by_id, get_users_from_db, update_user_in_db
     delete_user_from_db, set_role_for_user
 from app.crud.users import register_user, login_user
 from app.schemas import UserRegister, UserLogin, User, UserLogined
-from app.schemas.users import PrivilegesEnum
+from app.schemas.users import PrivilegesEnum, UserUpdate
 from app.settings import async_session_maker
 from app.utils.auth import create_access_token, get_current_user, user_has_permissions
 
@@ -49,7 +49,7 @@ async def logout_user(response: Response):
 
 
 @router.post('/{user_id}/set_privilege', response_model=User, summary='Sets the privilege for user')
-async def get_privilege_for_user(user_id: int, privilege: PrivilegesEnum,
+async def set_privilege_for_user(user_id: int, privilege: PrivilegesEnum,
                                  user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
     async with async_session_maker() as session:
         data = await set_role_for_user(session, privilege, user_id)
@@ -58,8 +58,8 @@ async def get_privilege_for_user(user_id: int, privilege: PrivilegesEnum,
 
 
 @router.put('/{user_id}/update', response_model=User, summary='Updates user by id')
-async def update_user_by_id(user_id: int, user_data: UserRegister,
-                            user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
+async def update_user_by_id(user_id: int, user_data: UserUpdate,
+                            user_creds: User = Depends(get_current_user)):
     if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
         async with async_session_maker() as session:
             data = await update_user_in_db(session, user_id, user_data)
@@ -71,7 +71,7 @@ async def update_user_by_id(user_id: int, user_data: UserRegister,
 
 @router.delete('/{user_id}/delete', response_model=User, summary='Deletes user by id')
 async def delete_user_by_id(user_id: int,
-                            user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
+                            user_creds: User = Depends(get_current_user)):
     if user_creds.privileges == PrivilegesEnum.ADMIN or user_creds.id == user_id:
         async with async_session_maker() as session:
             data = await delete_user_from_db(session, user_id)
