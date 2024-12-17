@@ -20,6 +20,15 @@ services:
       - "${ELASTIC_CLUSTER_PORT}:9300"
     volumes:
       - es-lib-volume:/usr/share/elasticsearch/data
+    restart: always
+    networks:
+      - library-dev
+    healthcheck:
+      test: "curl -f http://localhost:9200/_cluster/health?pretty"
+      interval: 40s
+      timeout: 5s
+      start_period: 5s
+      retries: 5
 
   postgres:
     image: postgres:17.0-alpine
@@ -31,8 +40,8 @@ services:
       - pgdata-lib-volume:/var/lib/postgresql/data
     healthcheck:
       test: "pg_isready -U postgres_user -d postgres_db"
-      interval: 3s
-      timeout: 3s
+      interval: 40s
+      timeout: 5s
       start_period: 5s
       retries: 5
     restart: always
@@ -69,9 +78,9 @@ services:
     command: server --console-address ":9001"
     healthcheck:
       test: "curl -f http://localhost:9000/minio/health/live"
-      interval: 3s
+      interval: 40s
       timeout: 5s
-      start_period: 10s
+      start_period: 5s
       retries: 5
     restart: always
     networks:
