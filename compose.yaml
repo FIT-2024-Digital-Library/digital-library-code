@@ -24,7 +24,7 @@ services:
     networks:
       - library-dev
     healthcheck:
-      test: "curl -f http://localhost:9200/_cluster/health?pretty"
+      test: "curl -f http://elasticsearch:9200/_cluster/health?pretty"
       interval: 40s
       timeout: 5s
       start_period: 5s
