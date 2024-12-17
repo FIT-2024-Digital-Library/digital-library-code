@@ -4,7 +4,7 @@ networks:
 services:
 
   lib-elasticsearch:
-    image: elasticsearch:8.10.0
+    image: elasticsearch:8.10.1
     container_name: library-elasticsearch
     environment:
       - discovery.type=single-node
