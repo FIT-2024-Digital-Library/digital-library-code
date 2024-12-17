@@ -3,7 +3,7 @@ networks:
 
 services:
 
-  elasticsearch:
+  lib-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
     container_name: library-elasticsearch
     environment:
@@ -30,7 +30,7 @@ services:
       start_period: 5s
       retries: 5
 
-  postgres:
+  lib-postgres:
     image: postgres:17.0-alpine
     container_name: library-postgres
     env_file: $PROJECT_PATH/config/postgres.env
@@ -48,10 +48,10 @@ services:
     networks:
       - library-dev
 
-  minio-setup:
+  lib-minio-setup:
     container_name: library-minio-setup
     depends_on:
-      minio:
+      lib-minio:
         condition: service_healthy
     image: minio/mc:latest
     env_file:
@@ -65,7 +65,7 @@ services:
     networks:
       - library-dev
 
-  minio:
+  lib-minio:
     container_name: library-minio
     image: minio/minio:latest
     env_file:
