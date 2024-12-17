@@ -17,7 +17,7 @@ services:
         hard: -1
     ports:
       - "${ELASTIC_API_PORT}:9200"
-      - "${ELASTIC_CLASTER_PORT}:9300"
+      - "${ELASTIC_CLUSTER_PORT}:9300"
     volumes:
       - es-lib-volume:/usr/share/elasticsearch/data
 
