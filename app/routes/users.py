@@ -49,7 +49,8 @@ async def logout_user(response: Response):
 
 
 @router.post('/{user_id}/set_privilege', response_model=User, summary='Sets the privilege for user')
-async def get_privilege_for_user(user_id: int, privilege: PrivilegesEnum, user_creds: User = Depends(get_current_user)):
+async def get_privilege_for_user(user_id: int, privilege: PrivilegesEnum,
+                                 user_creds: User = user_has_permissions(PrivilegesEnum.ADMIN)):
     async with async_session_maker() as session:
         data = await set_role_for_user(session, privilege, user_id)
         await session.commit()

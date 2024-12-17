@@ -21,7 +21,10 @@ async def register_user(session: AsyncSession, user_data: UserRegister):
     user_dict.pop("password")
     query = insert(user_table).values(**user_dict)
     result = await session.execute(query)
-    if result.inserted_primary_key:
+    key = result.inserted_primary_key
+    if key:
+        if key == 1:
+            await set_role_for_user(session, PrivilegesEnum.ADMIN, 1)
         user_dict.pop("password_hash")
         return user_dict
 
