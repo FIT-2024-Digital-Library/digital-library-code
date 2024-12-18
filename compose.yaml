@@ -14,11 +14,12 @@ services:
       - "${ELASTIC_CLUSTER_PORT}:9300"
     volumes:
       - es-lib-volume:/usr/share/elasticsearch/data
+    tty: true
     restart: always
     networks:
       - library-dev
     healthcheck:
-      test: "curl -f http://elasticsearch:9200/_cluster/health?pretty"
+      test: "curl -f http://lib-elasticsearch:9200/_cluster/health?pretty"
       interval: 200s
       timeout: 20s
       start_period: 30s
