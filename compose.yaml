@@ -9,12 +9,6 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.ml.enabled=false
-      - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
     ports:
       - "${ELASTIC_API_PORT}:9200"
       - "${ELASTIC_CLUSTER_PORT}:9300"
