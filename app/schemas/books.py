@@ -29,6 +29,7 @@ class BookCreate(CamelCaseBaseModel):
 
 
 class BookUpdate(CamelCaseBaseModel):
+    theme_id: Optional[int] = None
     title: Optional[str] = None
     author: Optional[str] = None
     genre: Optional[str] = None

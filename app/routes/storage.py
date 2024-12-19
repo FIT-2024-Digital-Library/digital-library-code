@@ -57,7 +57,7 @@ async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
 
 
 @router.get("/download/{filename}", response_class=StreamingResponse)
-def download_file(filename: str, user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
+def download_file(filename: str):
     if not is_file_exists(filename):
         raise HTTPException(404, "File not found")
     return StreamingResponse(
