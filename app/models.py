@@ -39,8 +39,8 @@ book_table = Table(
     Column("genre", ForeignKey(genre_table.c.id), nullable=True),
     Column("published_date", Date, nullable=True),
     Column("description", String, nullable=True),
-    Column("image_url", String, nullable=True),
-    Column("pdf_url", String)
+    Column("image_qname", String, nullable=True),
+    Column("pdf_qname", String)
 )
 
 review_table = Table(

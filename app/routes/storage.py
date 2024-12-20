@@ -18,7 +18,7 @@ router = APIRouter(
 def upload_file(file: UploadFile = File(), user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     obj = upload_file_to_s3(file)
     return FileUploadedScheme(
-        url=f"/storage/download/{quote(obj.object_name)}"
+        qname=quote(obj.object_name)
     )
 
 
@@ -36,7 +36,7 @@ def download_file(filename: str):
 @router.get("/list", response_model=list[FileUploadedScheme])
 def list_files():
     return [
-        FileUploadedScheme(url=f"/storage/{quote(obj.object_name)}")
+        FileUploadedScheme(qname=quote(obj.object_name))
         for obj in list_files_in_s3()
     ]
 

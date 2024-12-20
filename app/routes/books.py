@@ -1,9 +1,12 @@
+import urllib
+
 from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
+from app.crud.storage import file_stream_generator
 from app.schemas import Book, BookCreate, User
 from app.schemas.books import BookUpdate
 from app.schemas.users import PrivilegesEnum
@@ -42,6 +45,8 @@ async def get_book(book_id: int):
              summary='Creates new book. Only for authorized user with moderator privilege')
 async def create_book(book: BookCreate,
                       user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
+    print(f'\n{urllib.parse.unquote(book.pdf_qname)}\n')
+    # file_stream_generator(urllib.parse.unquote(book.pdf_qname)) # Так можно получить файл из ссылки
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()
