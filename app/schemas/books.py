@@ -7,6 +7,7 @@ __all__ = ["Book", "BookCreate"]
 
 class Book(CamelCaseBaseModel):
     id: int
+    theme_id: int
     title: str
     author: int
     genre: Optional[int] = None
@@ -17,6 +18,7 @@ class Book(CamelCaseBaseModel):
 
 
 class BookCreate(CamelCaseBaseModel):
+    theme_id: int
     title: str
     author: str
     genre: Optional[str] = None
@@ -27,6 +29,7 @@ class BookCreate(CamelCaseBaseModel):
 
 
 class BookUpdate(CamelCaseBaseModel):
+    theme_id: Optional[int] = None
     title: Optional[str] = None
     author: Optional[str] = None
     genre: Optional[str] = None
