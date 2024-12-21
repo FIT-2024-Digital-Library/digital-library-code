@@ -33,13 +33,14 @@ book_table = Table(
     "book_table",
     db_metadata,
     Column("id", Integer, primary_key=True),
+    Column("theme_id", Integer, nullable=False),
     Column("title", String(50)),
-    Column("author", ForeignKey(author_table.c.id)),
+    Column("author", ForeignKey(author_table.c.id), nullable=False),
     Column("genre", ForeignKey(genre_table.c.id), nullable=True),
     Column("published_date", Date, nullable=True),
     Column("description", String, nullable=True),
-    Column("image_url", String, nullable=True),
-    Column("pdf_url", String)
+    Column("image_qname", String, nullable=True),
+    Column("pdf_qname", String)
 )
 
 review_table = Table(
@@ -50,5 +51,5 @@ review_table = Table(
     Column("book_id", ForeignKey(book_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
     Column("mark", Integer),
     Column("text", String, nullable=True),
-    Column("last_edit_date", Date),
+    Column("last_edit_date", Date)
 )
