@@ -6,7 +6,7 @@ from sqlalchemy import select, insert, delete, update, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
-from app.crud.books import get_book_from_db
+from app.crud.books import get_book_from_db, update_book_in_db
 from app.models import review_table
 from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme
 
@@ -23,17 +23,7 @@ async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme
 
 async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> float:
     book = await get_book_from_db(session, book_id)
-    if book is None:
-        raise ValueError("Book not found")
-    result = await session.execute(
-        select(review_table.c.mark).where(review_table.c.book_id == book_id)
-    )
-    count = 0.0
-    _sum = 0.0
-    for review in result.mappings().all():
-        _sum += review['mark']
-        count += 1.0
-    return _sum / count if count > 0 else 0
+    return book['avg_mark']
 
 
 async def check_review_by_user_and_book(session: AsyncSession, owner_id: int, book_id: int) -> bool:
@@ -67,11 +57,19 @@ async def create_review_in_db(session: AsyncSession, owner_id: int, review_data:
         .values(owner_id=owner_id, last_edit_date=datetime.date.today(), **review_data.model_dump())
         .returning(review_table.c[Unpack[Review.model_fields]])
     )
+    current_avg = book['avg_mark']
+    reviews_count_for_book = book['marks_count']
+    new_reviews_count = reviews_count_for_book + 1
+    new_avg = (current_avg * reviews_count_for_book + review_data.mark) / new_reviews_count
+    updated_book = await update_book_in_db(session, review_data.book_id,
+                                           {'avg_mark': new_avg, 'marks_count': new_reviews_count})
+
     await session.commit()
     return Review(**result.mappings().first())
 
 
-async def update_review_in_db(session: AsyncSession, review_id: int, owner_id: int, review_data: ReviewUpdate) -> Review:
+async def update_review_in_db(session: AsyncSession, review_id: int, owner_id: int,
+                              review_data: ReviewUpdate) -> Review:
     old_review = await get_review_by_id(session, review_id)
     if old_review is None:
         raise ValueError("Review not found")
