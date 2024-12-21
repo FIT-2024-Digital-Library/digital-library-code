@@ -51,5 +51,5 @@ review_table = Table(
     Column("book_id", ForeignKey(book_table.c.id, ondelete='CASCADE'), index=True, nullable=False),
     Column("mark", Integer),
     Column("text", String, nullable=True),
-    Column("last_edit_date", Date),
+    Column("last_edit_date", Date)
 )

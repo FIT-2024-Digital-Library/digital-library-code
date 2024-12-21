@@ -1,26 +1,34 @@
 import os
-
 from typing import AsyncGenerator, Any
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, status
 from minio.datatypes import BaseHTTPResponse
 from minio.error import S3Error
 from minio.helpers import ObjectWriteResult
 
 from app.settings import minio_client, minio_cred
 
+
 def is_file_exists(path_to_object: str) -> bool:
     try:
         return minio_client.stat_object(minio_cred.bucket_name, path_to_object) is not None
     except S3Error as _:
         return False
-    
-def upload_file_to_s3(file: UploadFile) -> ObjectWriteResult:
-    full_path = file.filename
-    name, extension = os.path.splitext(file.filename)
+
+
+def __brute_force_path_select(filename: str | None):
+    if filename is None:
+        raise HTTPException(status_code=415, detail="Loaded file must to has a name")
+    path = filename
+    name, extension = os.path.splitext(filename)
     index = 0
-    while is_file_exists(full_path):
+    while is_file_exists(path):
         index += 1
-        full_path = f"{name}_{index}{extension}"
+        path = f"{name}_{index}{extension}"
+    return path
+
+
+def upload_file_to_s3(file: UploadFile) -> ObjectWriteResult:
+    full_path = __brute_force_path_select(file.filename)
     try:
         return minio_client.put_object(
             minio_cred.bucket_name, full_path, file.file, file.size
@@ -29,6 +37,7 @@ def upload_file_to_s3(file: UploadFile) -> ObjectWriteResult:
         raise HTTPException(409, f"Failed to upload file: {str(e)}")
 
 
+# получить файл из ссылки: file_stream_generator(urllib.parse.unquote(book.pdf_qname))
 async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
     file_response: BaseHTTPResponse = minio_client.get_object(minio_cred.bucket_name, full_path)
     try:
