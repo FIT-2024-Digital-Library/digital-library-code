@@ -8,6 +8,7 @@ from app.utils import create_tables, close_connections
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    search.init_elastic_indexing()
     await create_tables()
     yield
     await close_connections()
@@ -23,9 +24,9 @@ app.add_middleware(
 )
 
 app.include_router(books.router)
+app.include_router(search.router)
 app.include_router(users.router)
 app.include_router(authors.router)
 app.include_router(genres.router)
 app.include_router(storage.router)
 app.include_router(reviews.router)
-app.include_router(search.router)

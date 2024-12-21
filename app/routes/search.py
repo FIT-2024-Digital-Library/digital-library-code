@@ -22,7 +22,7 @@ def encode_text_to_vector(text: str):
 """
 
 # Подключение к Elasticsearch
-es = Elasticsearch(f"http://localhost:{ELASTIC_API_PORT}")
+es = Elasticsearch(f"http://84.237.53.137:{ELASTIC_API_PORT}")
 
 index_settings = {
     "settings": {
@@ -45,6 +45,12 @@ index_settings = {
     }
 }
 
+
+def init_elastic_indexing():
+    if not es.indices.exists(index="books"):
+        es.indices.create(index="books", body=index_settings)
+
+
 def extract_pdf_text(content: bytes) -> str:
     # Используем io.BytesIO для создания файлового объекта из содержимого
     with pdfplumber.open(io.BytesIO(content)) as pdf:
@@ -54,9 +60,8 @@ def extract_pdf_text(content: bytes) -> str:
     print("BOOK-PROCESSING: Finish extracting")
     return full_text
 
+
 def index_book(book_id: str, title: str, author: str, genre: str, content: bytes):
-    if not es.indices.exists(index="books"):
-        es.indices.create(index="books", body=index_settings)
     # Генерация вектора
     # content_vector = encode_text_to_vector(content)
     # Формирование документа
