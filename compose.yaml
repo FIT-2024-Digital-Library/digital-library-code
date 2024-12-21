@@ -3,9 +3,9 @@ networks:
 
 services:
 
-  lib-elasticsearch:
+  lib-elastic:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.16.0
-    container_name: library-elasticsearch
+    container_name: library-elastic
     environment:
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
