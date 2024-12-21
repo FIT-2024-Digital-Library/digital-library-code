@@ -1,9 +1,12 @@
+import urllib.parse
+
 from datetime import date
 from typing import Optional, List
-from fastapi import APIRouter, Query, HTTPException, Depends
+from fastapi import APIRouter, Query, HTTPException
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
+from app.crud.storage import file_stream_generator
 from app.schemas import Book, BookCreate, User
 from app.schemas.books import BookUpdate
 from app.schemas.users import PrivilegesEnum
@@ -40,8 +43,10 @@ async def get_book(book_id: int):
 
 @router.post('/create', response_model=int,
              summary='Creates new book. Only for authorized user with moderator privilege')
-async def create_book(book: BookCreate,
-                      user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
+async def create_book(
+        book: BookCreate,
+        user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)
+):
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()

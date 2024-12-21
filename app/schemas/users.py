@@ -13,15 +13,9 @@ class PrivilegesEnum(str, Enum):
     ADMIN = "admin"
 
 
-class UserRegister(CamelCaseBaseModel):
-    email: EmailStr = Field(description="Электронная почта")
-    password: str = Field(min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
-    name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
-
-
 class UserUpdate(CamelCaseBaseModel):
-    password: Optional[str] = Field(default=None, min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
     name: Optional[str] = Field(default=None, min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
+    password: Optional[str] = Field(default=None, min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
 
 
 class UserLogin(CamelCaseBaseModel):
@@ -29,14 +23,15 @@ class UserLogin(CamelCaseBaseModel):
     password: str = Field(min_length=5, max_length=50, description="Пароль, от 5 до 50 знаков")
 
 
-class User(CamelCaseBaseModel):
-    id: int
-    email: EmailStr = Field(description="Электронная почта")
+class UserRegister(UserLogin):
     name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
-    privileges: PrivilegesEnum
 
 
 class UserLogined(CamelCaseBaseModel):
-    email: EmailStr = Field(description="Электронная почта")
     name: str = Field(min_length=3, max_length=50, description="Имя, от 3 до 50 символов")
+    email: EmailStr = Field(description="Электронная почта")
     privileges: PrivilegesEnum
+
+
+class User(UserLogined):
+    id: int
