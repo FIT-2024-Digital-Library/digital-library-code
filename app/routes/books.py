@@ -46,6 +46,7 @@ async def create_book(
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()
+        # тут индексируем книгу
         return book_id
 
 

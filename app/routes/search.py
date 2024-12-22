@@ -1,8 +1,8 @@
-from elasticsearch import Elasticsearch
+import io, pdfplumber
 from fastapi import APIRouter, BackgroundTasks, UploadFile, File
 #from sentence_transformers import SentenceTransformer
-import pdfplumber
-import io
+
+from app.settings.elastic import _es, elastic_cred
 
 
 router = APIRouter(
@@ -11,8 +11,6 @@ router = APIRouter(
 )
 
 
-ELASTIC_API_PORT = 9200
-
 """
 # Загрузка модели
 __model = SentenceTransformer('all-MiniLM-L6-v2')  # Модель с размером вектора 384
@@ -20,35 +18,6 @@ __model = SentenceTransformer('all-MiniLM-L6-v2')  # Модель с разме�
 def encode_text_to_vector(text: str):
     return __model.encode(text).tolist()  # Преобразуем в список для сохранения
 """
-
-# Подключение к Elasticsearch
-es = Elasticsearch(f"http://84.237.53.137:{ELASTIC_API_PORT}")
-
-index_settings = {
-    "settings": {
-        "analysis": {
-            "analyzer": {
-                "default": {
-                    "type": "standard"
-                }
-            }
-        }
-    },
-    "mappings": {
-        "dynamic": "strict",
-        "properties": {
-            "title": {"type": "text"},
-            "author": {"type": "text"},
-            "genre": {"type": "keyword"},
-            "content": {"type": "text"}
-        }
-    }
-}
-
-
-def init_elastic_indexing():
-    if not es.indices.exists(index="books"):
-        es.indices.create(index="books", body=index_settings)
 
 
 def extract_pdf_text(content: bytes) -> str:
@@ -74,7 +43,7 @@ def index_book(book_id: str, title: str, author: str, genre: str, content: bytes
     }
     # Индексация с обработкой ошибок
     try:
-        es.index(index="books", id=book_id, body=document)
+        _es.index(index=elastic_cred.books_index, id=book_id, body=document)
         print("BOOK-PROCESSING: Finish indexing")
     except Exception as e:
         print(f"Ошибка индексации: {e}")
@@ -105,7 +74,7 @@ def search_books(query):
             }
         }
     }
-    return es.search(index="books", body=search_body)
+    return _es.search(index=elastic_cred.books_index, body=search_body)
 
 
 @router.get("/find-book")

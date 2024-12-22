@@ -4,7 +4,8 @@ from fastapi.responses import StreamingResponse, Response
 
 from app.schemas import FileUploadedScheme, User, PrivilegesEnum
 from app.utils.auth import user_has_permissions
-from app.crud.storage import is_file_exists, upload_file_to_s3, file_stream_generator, list_files_in_s3, delete_file_in_s3
+from app.crud.storage import is_file_exists, upload_file_to_s3, file_stream_generator, \
+    list_files_in_s3, delete_file_in_s3
 
 
 router = APIRouter(
