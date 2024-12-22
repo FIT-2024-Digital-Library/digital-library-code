@@ -1,18 +1,16 @@
 import urllib.parse
-
 from datetime import date
 from typing import Optional, List
-from fastapi import APIRouter, Query, HTTPException
-from sqlalchemy import delete
+from fastapi import APIRouter, Query, HTTPException, BackgroundTasks
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
-from app.models import review_table
-from app.schemas import Book, BookCreate, User
-from app.schemas.books import BookUpdate
-from app.schemas.users import PrivilegesEnum
+from app.crud import indexing
+from app.crud.storage import delete_file_in_s3
+from app.schemas import Book, BookCreate, User, BookUpdate, PrivilegesEnum
 from app.settings import async_session_maker
 from app.utils.auth import user_has_permissions
+
 
 router = APIRouter(
     prefix='/books',
@@ -58,12 +56,13 @@ async def get_book(book_id: int):
 @router.post('/create', response_model=int,
              summary='Creates new book. Only for authorized user with moderator privilege')
 async def create_book(
-        book: BookCreate,
+        book: BookCreate, background_tasks: BackgroundTasks,
         user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)
 ):
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()
+        background_tasks.add_task(indexing.index_book, book_id, book.genre, book.pdf_qname)
         return book_id
 
 
@@ -72,7 +71,7 @@ async def create_book(
 async def update_book(book_id: int, book: BookUpdate,
                       user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
     async with async_session_maker() as session:
-        book = await update_book_in_db(session, book_id, book)
+        book = await update_book_in_db(session, book_id, book)  ## тут тоже надо Celery
         if book is None:
             raise HTTPException(status_code=404, detail="Book not found")
         await session.commit()
@@ -86,8 +85,7 @@ async def delete_book(book_id: int, user_data: User = user_has_permissions(Privi
         book = await delete_book_from_db(session, book_id)
         if book is None:
             raise HTTPException(status_code=404, detail="Book not found")
-        await session.execute(
-            delete(review_table).where(review_table.c.book_id == book_id)
-        )
         await session.commit()
+        await indexing.delete_book(book_id)
+        delete_file_in_s3(urllib.parse.unquote(book['pdf_qname']))
         return book

@@ -1,6 +1,6 @@
 import os
 from typing import AsyncGenerator, Any
-from fastapi import UploadFile, HTTPException, status
+from fastapi import UploadFile, HTTPException
 from minio.datatypes import BaseHTTPResponse
 from minio.error import S3Error
 from minio.helpers import ObjectWriteResult
@@ -17,7 +17,7 @@ def is_file_exists(path_to_object: str) -> bool:
 
 def __brute_force_path_select(filename: str | None):
     if filename is None:
-        raise HTTPException(status_code=415, detail="Loaded file must to has a name")
+        raise HTTPException(status_code=415, detail="The uploaded file must have a name")
     path = filename
     name, extension = os.path.splitext(filename)
     index = 0
@@ -46,6 +46,13 @@ async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
     finally:
         file_response.close()
         file_response.release_conn()
+
+
+async def download_file_bytes(full_path: str) -> bytes:
+    data = bytearray()
+    async for chunk in file_stream_generator(full_path):
+        data.extend(chunk)
+    return bytes(data)
 
 
 def list_files_in_s3():
