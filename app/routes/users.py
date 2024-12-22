@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, status, Response, Depends
+from sqlalchemy import delete
 
 from app.crud.users import find_user_by_id, get_users_from_db, update_user_in_db, \
     delete_user_from_db, set_role_for_user
 from app.crud.users import register_user, login_user
+from app.models import review_table
 from app.schemas import UserRegister, UserLogin, User, UserLogined
 from app.schemas.users import PrivilegesEnum, UserUpdate
 from app.settings import async_session_maker
@@ -77,6 +79,9 @@ async def delete_user_by_id(user_id: int,
             data = await delete_user_from_db(session, user_id)
             if data is None:
                 raise HTTPException(status_code=403, detail="User doesn't exist")
+            await session.execute(
+                delete(review_table).where(review_table.c.owner_id == user_id)
+            )
             await session.commit()
             return data
     else:

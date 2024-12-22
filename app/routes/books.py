@@ -3,10 +3,12 @@ import urllib.parse
 from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Query, HTTPException
+from sqlalchemy import delete
 
 from app.crud.books import get_books_from_db, get_book_from_db, create_book_in_db, \
     update_book_in_db, delete_book_from_db
 from app.crud.storage import file_stream_generator
+from app.models import review_table
 from app.schemas import Book, BookCreate, User
 from app.schemas.books import BookUpdate
 from app.schemas.users import PrivilegesEnum
@@ -85,5 +87,8 @@ async def delete_book(book_id: int, user_data: User = user_has_permissions(Privi
         book = await delete_book_from_db(session, book_id)
         if book is None:
             raise HTTPException(status_code=404, detail="Book not found")
+        await session.execute(
+            delete(review_table).where(review_table.c.book_id == book_id)
+        )
         await session.commit()
         return book
