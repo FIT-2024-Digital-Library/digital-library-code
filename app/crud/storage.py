@@ -48,6 +48,13 @@ async def file_stream_generator(full_path: str) -> AsyncGenerator[bytes, Any]:
         file_response.release_conn()
 
 
+async def download_file_bytes(full_path: str) -> bytes:
+    data = bytearray()
+    async for chunk in file_stream_generator(full_path):
+        data.extend(chunk)
+    return bytes(data)
+
+
 def list_files_in_s3():
     return minio_client.list_objects(minio_cred.bucket_name)
 

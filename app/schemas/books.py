@@ -20,3 +20,5 @@ class BookUpdate(BookCreate):
 
 class Book(BookCreate):
     id: int
+    author: int
+    genre: int

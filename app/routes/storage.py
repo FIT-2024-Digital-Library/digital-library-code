@@ -29,7 +29,7 @@ def download_file(filename: str):
     return StreamingResponse(
         file_stream_generator(f"{filename}"),
         media_type="application/octet-stream",
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={urllib.parse.quote(filename)}"}
     )
 
 
