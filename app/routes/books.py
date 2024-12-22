@@ -21,7 +21,7 @@ router = APIRouter(
 )
 
 
-@router.get('/', response_model=List[Book], summary='Returns books using search parameters (all of them otherwise)')
+@router.get('/', response_model=List[int], summary='Returns books using search parameters (all of them otherwise)')
 async def get_books(
         title: Optional[str] = Query(None, description="Filter by book title"),
         author: Optional[str] = Query(None, description="Filter by author"),

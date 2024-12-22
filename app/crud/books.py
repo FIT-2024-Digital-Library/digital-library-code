@@ -18,7 +18,7 @@ async def get_books_from_db(
         description: str = None,
         min_mark: float = None,
         max_mark: float = None):
-    query = select(book_table)
+    query = select(book_table.c.id)
     if title is not None:
         query = query.where(book_table.c.title.ilike(f"%{title}%"))
     if author is not None:
@@ -44,7 +44,7 @@ async def get_books_from_db(
 
     result = await session.execute(query)
     books = result.mappings().all()
-    return books
+    return [book['id'] for book in books]
 
 
 async def get_book_from_db(session: AsyncSession, book_id: int):
