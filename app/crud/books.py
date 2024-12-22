@@ -91,8 +91,7 @@ async def update_book_in_db(session: AsyncSession, book_id: int, book: BookUpdat
 
     query = update(book_table).where(book_table.c.id == book_id).values(**book_dict)
     await session.execute(query)
-    book = await get_book_from_db(session, book_id)
-    return book
+    return await get_book_from_db(session, book_id)
 
 
 async def delete_book_from_db(session: AsyncSession, book_id: int):

@@ -13,7 +13,7 @@ async def get_genre_from_db(session: AsyncSession, genre_id: int):
     return result.mappings().first()
 
 
-async def get_genres_from_db(session: AsyncSession, name: str = None):
+async def get_genres_from_db(session: AsyncSession, name: str | None = None):
     if name is not None:
         query = select(genre_table).where(genre_table.c.name.ilike(f"%{name}%"))
     else:

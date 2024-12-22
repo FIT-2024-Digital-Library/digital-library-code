@@ -33,5 +33,4 @@ class BookUpdate(CamelCaseBaseModel):
 
 class Book(BookCreate):
     id: int
-    author: int
     genre: int
