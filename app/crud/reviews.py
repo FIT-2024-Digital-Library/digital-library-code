@@ -1,16 +1,17 @@
-from typing_extensions import Unpack
 import datetime
-from sqlalchemy import select, insert, delete, update, func
+from sqlalchemy import select, insert, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 
 from app.crud.books import get_book_from_db, update_book_in_db
 from app.models import review_table
-from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme
+from app.schemas import Review, ReviewCreate, ReviewUpdate, ReviewsFiltersScheme, BookUpdate
+
+REVIEW_FIELDS = ['id', 'owner_id', 'book_id', 'mark', 'last_edit_date', 'text']
 
 
 async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme) -> List[int]:
-    query = select(review_table.c[Unpack[Review.model_fields]]).limit(filters.limit).offset(filters.offset)
+    query = select(*[review_table.c[field] for field in REVIEW_FIELDS]).limit(filters.limit).offset(filters.offset)
     if filters.book_id is not None:
         query = query.where(review_table.c.book_id == filters.book_id)
     if filters.owner_id is not None:
@@ -19,25 +20,9 @@ async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme
     return [review['id'] for review in result.mappings().all()]
 
 
-async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> Optional[float]:
-    book = await get_book_from_db(session, book_id)
-    return book['avg_mark'] if book else None
-
-
-async def check_review_by_user_and_book(session: AsyncSession, owner_id: int, book_id: int) -> bool:
-    result = (await session.execute(
-        select(review_table)
-        .where(
-            review_table.c.owner_id == owner_id,
-            review_table.c.book_id == book_id
-        )
-    )).scalar()
-    return result is not None
-
-
 async def get_review_by_id(session: AsyncSession, review_id: int) -> Optional[Review]:
     result = (await session.execute(
-        select(review_table.c[Unpack[Review.model_fields]])
+        select(*[review_table.c[field] for field in REVIEW_FIELDS])
         .where(review_table.c.id == review_id)
     )).mappings().first()
     return None if result is None else Review(**result)
@@ -52,14 +37,14 @@ async def create_review_in_db(session: AsyncSession, owner_id: int, review_data:
     result = await session.execute(
         insert(review_table)
         .values(owner_id=owner_id, last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(review_table.c[Unpack[Review.model_fields]])
+        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
     )
     current_avg = book['avg_mark']
     reviews_count_for_book = book['marks_count']
     new_reviews_count = reviews_count_for_book + 1
     new_avg = (current_avg * reviews_count_for_book + review_data.mark) / new_reviews_count
     await update_book_in_db(session, review_data.book_id,
-                            {'avg_mark': new_avg, 'marks_count': new_reviews_count})
+                            BookUpdate(**{'avg_mark': new_avg, 'marks_count': new_reviews_count}))
     await session.commit()
     return Review(**result.mappings().first())
 
@@ -76,12 +61,12 @@ async def update_review_in_db(session: AsyncSession, review_id: int, owner_id: i
         current_avg = book['avg_mark']
         reviews_count_for_book = book['marks_count']
         new_avg = (current_avg * reviews_count_for_book - old_review.mark + review_data.mark) / reviews_count_for_book
-        await update_book_in_db(session, old_review.book_id, {'avg_mark': new_avg})
+        await update_book_in_db(session, old_review.book_id, BookUpdate(**{'avg_mark': new_avg}))
     result = await session.execute(
         update(review_table)
         .where(review_table.c.id == review_id)
         .values(last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(review_table.c[Unpack[Review.model_fields]])
+        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
     )
     await session.commit()
     return Review(**result.mappings().first())
@@ -99,9 +84,25 @@ async def delete_review_in_db(session: AsyncSession, review_id: int, owner_id: i
     new_reviews_count = reviews_count_for_book - 1
     new_avg = (current_avg * reviews_count_for_book - review.mark) / new_reviews_count if new_reviews_count > 0 else 0
     await update_book_in_db(session, review.book_id,
-                            {'avg_mark': new_avg, 'marks_count': new_reviews_count})
+                            BookUpdate(**{'avg_mark': new_avg, 'marks_count': new_reviews_count}))
     await session.execute(
         delete(review_table).where(review_table.c.id == review_id)
     )
     await session.commit()
     return review
+
+
+async def check_review_by_user_and_book(session: AsyncSession, owner_id: int, book_id: int) -> bool:
+    result = (await session.execute(
+        select(review_table)
+        .where(
+            review_table.c.owner_id == owner_id,
+            review_table.c.book_id == book_id
+        )
+    )).scalar()
+    return result is not None
+
+
+async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> Optional[float]:
+    book = await get_book_from_db(session, book_id)
+    return book['avg_mark'] if book else None
