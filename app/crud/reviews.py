@@ -106,3 +106,8 @@ async def check_review_by_user_and_book(session: AsyncSession, owner_id: int, bo
 async def get_average_mark_in_db(session: AsyncSession, book_id: int) -> Optional[float]:
     book = await get_book_from_db(session, book_id)
     return book['avg_mark'] if book else None
+
+
+async def get_reviews_count_in_db(session: AsyncSession, book_id: int) -> Optional[int]:
+    book = await get_book_from_db(session, book_id)
+    return book['marks_count'] if book else None

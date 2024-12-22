@@ -2,7 +2,7 @@ from typing import List, Annotated
 from fastapi import APIRouter, Query, HTTPException, Depends
 
 from app.crud.reviews import get_review_by_id, create_review_in_db, update_review_in_db, delete_review_in_db, \
-    get_reviews_in_db, get_average_mark_in_db
+    get_reviews_in_db, get_average_mark_in_db, get_reviews_count_in_db
 from app.schemas import User, ReviewsFiltersScheme, Review, ReviewCreate, ReviewUpdate
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user
@@ -34,10 +34,19 @@ async def get_review(review_id: int) -> Review:
 @router.get('/average/{book_id}', response_model=float, summary='Returns average mark for book')
 async def get_average_mark(book_id: int) -> float:
     async with async_session_maker() as session:
-        try:
-            return await get_average_mark_in_db(session, book_id)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+        avg_mark = await get_average_mark_in_db(session, book_id)
+        if avg_mark is None:
+            raise HTTPException(status_code=404, detail="Book not found")
+        return avg_mark
+
+
+@router.get('/count/{book_id}', response_model=int, summary='Returns marks count for book')
+async def get_marks_count(book_id: int) -> int:
+    async with async_session_maker() as session:
+        reviews_count = await get_reviews_count_in_db(session, book_id)
+        if reviews_count is None:
+            raise HTTPException(status_code=404, detail="Book not found")
+        return reviews_count
 
 
 @router.post('/create', response_model=Review,

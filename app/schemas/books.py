@@ -27,8 +27,8 @@ class BookUpdate(CamelCaseBaseModel):
     description: Optional[str] = None
     image_qname: Optional[str] = None
     pdf_qname: Optional[str] = None
-    avg_mark: Optional[float] = 0
-    marks_count: Optional[int] = 0
+    avg_mark: Optional[float] = None
+    marks_count: Optional[int] = None
 
 
 class Book(BookCreate):
