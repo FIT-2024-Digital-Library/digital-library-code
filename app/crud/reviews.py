@@ -37,7 +37,7 @@ async def create_review_in_db(session: AsyncSession, owner_id: int, review_data:
     result = await session.execute(
         insert(review_table)
         .values(owner_id=owner_id, last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
+        .returning(review_table.c[REVIEW_FIELDS])
     )
     current_avg = book['avg_mark']
     reviews_count_for_book = book['marks_count']
