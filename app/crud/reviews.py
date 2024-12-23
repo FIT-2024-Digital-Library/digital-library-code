@@ -66,7 +66,7 @@ async def update_review_in_db(session: AsyncSession, review_id: int, owner_id: i
         update(review_table)
         .where(review_table.c.id == review_id)
         .values(last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
+        .returning(review_table.c[REVIEW_FIELDS])
     )
     await session.commit()
     return Review(**result.mappings().first())
