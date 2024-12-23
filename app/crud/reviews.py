@@ -22,7 +22,7 @@ async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme
 
 async def get_review_by_id(session: AsyncSession, review_id: int) -> Optional[Review]:
     result = (await session.execute(
-        select(*[review_table.c[field] for field in REVIEW_FIELDS])
+        select(review_table.c[REVIEW_FIELDS])
         .where(review_table.c.id == review_id)
     )).mappings().first()
     return None if result is None else Review(**result)
@@ -37,14 +37,14 @@ async def create_review_in_db(session: AsyncSession, owner_id: int, review_data:
     result = await session.execute(
         insert(review_table)
         .values(owner_id=owner_id, last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
+        .returning(review_table.c[REVIEW_FIELDS])
     )
     current_avg = book['avg_mark']
     reviews_count_for_book = book['marks_count']
     new_reviews_count = reviews_count_for_book + 1
     new_avg = (current_avg * reviews_count_for_book + review_data.mark) / new_reviews_count
     await update_book_in_db(session, review_data.book_id,
-                            BookUpdate(**{'avg_mark': new_avg, 'marks_count': new_reviews_count}))
+                            BookUpdate(avg_mark=new_avg, marks_count=new_reviews_count))
     await session.commit()
     return Review(**result.mappings().first())
 
@@ -66,7 +66,7 @@ async def update_review_in_db(session: AsyncSession, review_id: int, owner_id: i
         update(review_table)
         .where(review_table.c.id == review_id)
         .values(last_edit_date=datetime.date.today(), **review_data.model_dump())
-        .returning(*[review_table.c[field] for field in REVIEW_FIELDS])
+        .returning(review_table.c[REVIEW_FIELDS])
     )
     await session.commit()
     return Review(**result.mappings().first())
