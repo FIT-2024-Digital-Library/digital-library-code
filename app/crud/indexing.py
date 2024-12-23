@@ -56,3 +56,17 @@ async def context_search_books(query):
         }
     }
     return await _es.search(index=elastic_cred.books_index, body=search_body)
+
+"""
+Как происходит поиск книги в этой функции:
+async def context_search_books(query):
+    search_body = {
+        "query": {
+            "multi_match": {
+                "query": query,
+                "fields": ["genre", "content"]
+            }
+        }
+    }
+    return await _es.search(index=elastic_cred.books_index, body=search_body)
+"""
