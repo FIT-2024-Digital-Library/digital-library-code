@@ -2,12 +2,14 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import books, users, authors, genres, storage, reviews
+from app.routes import books, complex_search, users, authors, genres, storage, reviews
+from app.settings import init_elastic_indexing
 from app.utils import create_tables, close_connections
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_elastic_indexing()
     await create_tables()
     yield
     await close_connections()
@@ -23,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(books.router)
+app.include_router(complex_search.router)
 app.include_router(users.router)
 app.include_router(authors.router)
 app.include_router(genres.router)
