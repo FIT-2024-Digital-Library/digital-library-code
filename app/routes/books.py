@@ -62,7 +62,9 @@ async def create_book(
     async with async_session_maker() as session:
         book_id = await create_book_in_db(session, book)
         await session.commit()
-        background_tasks.add_task(indexing.index_book, book_id, book.genre, book.pdf_qname)
+        background_tasks.add_task(
+            indexing.index_book, book_id, book.genre, urllib.parse.unquote(book.pdf_qname)
+        )
         return book_id
 
 
