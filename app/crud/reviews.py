@@ -44,7 +44,7 @@ async def create_review_in_db(session: AsyncSession, owner_id: int, review_data:
     new_reviews_count = reviews_count_for_book + 1
     new_avg = (current_avg * reviews_count_for_book + review_data.mark) / new_reviews_count
     await update_book_in_db(session, review_data.book_id,
-                            BookUpdate(**{'avg_mark': new_avg, 'marks_count': new_reviews_count}))
+                            BookUpdate(avg_mark=new_avg, marks_count=new_reviews_count))
     await session.commit()
     return Review(**result.mappings().first())
 
