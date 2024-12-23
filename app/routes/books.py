@@ -11,7 +11,6 @@ from app.schemas import Book, BookCreate, User, BookUpdate, PrivilegesEnum
 from app.settings import async_session_maker
 from app.utils.auth import user_has_permissions
 
-
 router = APIRouter(
     prefix='/books',
     tags=['book']
@@ -90,4 +89,5 @@ async def delete_book(book_id: int, user_data: User = user_has_permissions(Privi
         await session.commit()
         await indexing.delete_book(book_id)
         delete_file_in_s3(urllib.parse.unquote(book['pdf_qname']))
+        delete_file_in_s3(urllib.parse.unquote(book['image_qname']))
         return book
