@@ -22,7 +22,7 @@ async def get_reviews_in_db(session: AsyncSession, filters: ReviewsFiltersScheme
 
 async def get_review_by_id(session: AsyncSession, review_id: int) -> Optional[Review]:
     result = (await session.execute(
-        select(*[review_table.c[field] for field in REVIEW_FIELDS])
+        select(review_table.c[REVIEW_FIELDS])
         .where(review_table.c.id == review_id)
     )).mappings().first()
     return None if result is None else Review(**result)
