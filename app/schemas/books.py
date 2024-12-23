@@ -10,7 +10,7 @@ class BookCreate(CamelCaseBaseModel):
     title: str
     author: str
     genre: Optional[str] = None
-    published_date: Optional[date] = None
+    published_date: Optional[int] = None
     description: Optional[str] = None
     image_qname: Optional[str] = None
     pdf_qname: str
@@ -23,7 +23,7 @@ class BookUpdate(CamelCaseBaseModel):
     title: Optional[str] = None
     author: Optional[str] = None
     genre: Optional[str] = None
-    published_date: Optional[date] = None
+    published_date: Optional[int] = None
     description: Optional[str] = None
     image_qname: Optional[str] = None
     pdf_qname: Optional[str] = None
@@ -34,4 +34,4 @@ class BookUpdate(CamelCaseBaseModel):
 class Book(BookCreate):
     id: int
     author: int
-    genre: int
+    genre: Optional[int] = None

@@ -14,7 +14,7 @@ async def get_books_from_db(
         title: str = None,
         author: str = None,
         genre: str = None,
-        published_date: date = None,
+        published_date: int = None,
         description: str = None,
         min_mark: float = None,
         max_mark: float = None):

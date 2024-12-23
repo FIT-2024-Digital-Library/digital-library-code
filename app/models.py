@@ -37,7 +37,7 @@ book_table = Table(
     Column("title", String(50)),
     Column("author", ForeignKey(author_table.c.id), nullable=False),
     Column("genre", ForeignKey(genre_table.c.id), nullable=True),
-    Column("published_date", Date, nullable=True),
+    Column("published_date", Integer, nullable=True),
     Column("description", String, nullable=True),
     Column("image_qname", String, nullable=True),
     Column("pdf_qname", String),

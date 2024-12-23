@@ -26,7 +26,7 @@ async def get_books(
         title: Optional[str] = Query(None, description="Filter by book title"),
         author: Optional[str] = Query(None, description="Filter by author"),
         genre: Optional[str] = Query(None, description="Filter by name"),
-        published_date: Optional[date] = Query(None, description="Filter by publication date"),
+        published_date: Optional[int] = Query(None, description="Filter by publication year"),
         description: Optional[str] = Query(None, description="Filter by description keyword"),
         min_mark: Optional[float] = Query(
             None,
