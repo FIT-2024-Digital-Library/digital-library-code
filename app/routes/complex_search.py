@@ -23,5 +23,5 @@ def encode_text_to_vector(text: str):
 @router.get("/context")#, response_model=list[int])
 async def context_search(query: str):# -> list[int]:
     results: dict = await context_search_books(query)
-    return [int(book["_id"]) for book in results['hits']['hits']
-                            if book["_score"] >= elastic_cred.min_score]
+    return [{"id":book["_id"], "score":book["_score"], "genre":book["_source"]["genre"]}
+            for book in results['hits']['hits'] if book["_score"] >= elastic_cred.min_score]
