@@ -1,4 +1,4 @@
-import io, pdfplumber, urllib.parse
+import io, pdfplumber
 from fastapi import HTTPException
 
 from app.crud.storage import download_file_bytes
@@ -29,12 +29,8 @@ async def index_book(book_id: int, genre: str, book_file_path: str):
     # Генерация вектора
     # content_vector = encode_text_to_vector(content)
     # Формирование документа
-    book_text: str = __extract_pdf_text(
-        await download_file_bytes(urllib.parse.unquote(book_file_path))
-    )
-    document = {
-        "genre": genre if genre is not None else "", "content": book_text
-    }
+    book_text: str = __extract_pdf_text(await download_file_bytes(book_file_path))
+    document = {"genre": genre if genre is not None else "", "content": book_text}
     try:
         await _es.index(index=elastic_cred.books_index, id=str(book_id), body=document)
         print("BOOK-PROCESSING: Finish indexing")
@@ -60,3 +56,17 @@ async def context_search_books(query):
         }
     }
     return await _es.search(index=elastic_cred.books_index, body=search_body)
+
+"""
+Как происходит поиск книги в этой функции:
+async def context_search_books(query):
+    search_body = {
+        "query": {
+            "multi_match": {
+                "query": query,
+                "fields": ["genre", "content"]
+            }
+        }
+    }
+    return await _es.search(index=elastic_cred.books_index, body=search_body)
+"""

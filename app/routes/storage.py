@@ -15,11 +15,12 @@ router = APIRouter(
 
 
 @router.post("/", response_model=FileUploadedScheme, summary="Uploads new file. Privileged users only.")
-def upload_file(file: UploadFile = File(), user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
-    obj = upload_file_to_s3(file)
-    return FileUploadedScheme(
-        qname=urllib.parse.quote(obj.object_name)
-    )
+def upload_file(
+        file: UploadFile = File(...),
+        user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)
+):
+    book_object = upload_file_to_s3(file)
+    return FileUploadedScheme(qname=urllib.parse.quote(book_object.object_name))
 
 
 @router.get("/download/{filename}", response_class=StreamingResponse)
