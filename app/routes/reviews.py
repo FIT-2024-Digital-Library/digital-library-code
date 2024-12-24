@@ -33,7 +33,7 @@ async def get_review(review_id: int) -> Review:
 @router.get('/average/{book_id}', response_model=float, summary='Returns average mark for book')
 async def get_average_mark(book_id: int) -> float:
     async with async_session_maker() as session:
-        avg_mark = await get_average_mark(session, book_id)
+        avg_mark = await ReviewsCrud.get_average_mark(session, book_id)
         if avg_mark is None:
             raise HTTPException(status_code=404, detail="Book not found")
         return avg_mark
