@@ -12,7 +12,7 @@ class BookCreate(CamelCaseBaseModel):
     genre: Optional[str] = None
     published_date: Optional[int] = None
     description: Optional[str] = None
-    image_qname: Optional[str] = None
+    image_qname: str = ""
     pdf_qname: str
     avg_mark: Optional[float] = 0
     marks_count: Optional[int] = 0
@@ -31,4 +31,4 @@ class BookUpdate(CamelCaseBaseModel):
 class Book(BookCreate):
     id: int
     author: int
-    genre: Optional[int]
+    genre: int

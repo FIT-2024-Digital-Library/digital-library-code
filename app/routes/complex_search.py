@@ -8,19 +8,16 @@ router = APIRouter(
     tags=['complex_search']
 )
 
-"""
-from sentence_transformers import SentenceTransformer
 
-# Загрузка модели
-__model = SentenceTransformer('all-MiniLM-L6-v2')  # Модель с размером вектора 384
-
-def encode_text_to_vector(text: str):
-    return __model.encode(text).tolist()  # Преобразуем в список для сохранения
-"""
-
-
-@router.get("/context")  # , response_model=list[int])
-async def context_search(query: str):  # -> list[int]:
+@router.get("/context", response_model=list[int])
+async def context_search(query: str) -> list[int]:
     results: dict = await Indexing.context_search_books(query)
     return [int(book["_id"]) for book in results['hits']['hits']
-            if book["_score"] >= elastic_cred.min_score]
+                             if book["_score"] >= elastic_cred.min_content_score]
+
+
+@router.get("/semantic", response_model=list[int])
+async def semantic_search(query: str) -> list[int]:
+    results: dict = await Indexing.semantic_search_books(query)
+    return [int(book["_id"]) for book in results['hits']['hits']
+                             if book["_score"] >= elastic_cred.min_semantic_score]
