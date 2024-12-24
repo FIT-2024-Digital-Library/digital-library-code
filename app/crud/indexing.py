@@ -1,7 +1,6 @@
 import io, pdfplumber
 from fastapi import HTTPException
 
-from app.crud.books import BooksCrud
 from app.crud.storage import Storage
 from app.observer_pattern.observable_event import ObservableEvent
 from app.observer_pattern.subscriber_interface import SubscriberInterface

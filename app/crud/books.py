@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.crud.authors import AuthorsCrud
 from app.crud.crud_interface import CrudInterface
 from app.crud.genres import GenresCrud
-from app.crud.indexing import delete_book, index_book
-from app.crud.storage import delete_file_in_s3
+from app.crud.indexing import Indexing
+from app.crud.storage import Storage
 from app.models import book_table
 from app.schemas import BookCreate, GenreCreate, AuthorCreate
 from app.schemas.books import BookUpdate
@@ -83,12 +83,12 @@ class BooksCrud(CrudInterface):
 
         book_dict = model.model_dump()
         if book_dict['pdf_qname'] and book_dict['pdf_qname'] != book_in_db['pdf_qname']:
-            await delete_book(element_id)
-            delete_file_in_s3(urllib.parse.unquote(book_in_db['pdf_qname']))
-            await index_book(element_id, book_dict['genre'], urllib.parse.unquote(book_dict['pdf_qname']))
+            await Indexing.delete_book(element_id)
+            Storage.delete_file_in_s3(urllib.parse.unquote(book_in_db['pdf_qname']))
+            await Indexing.index_book(element_id, book_dict['genre'], urllib.parse.unquote(book_dict['pdf_qname']))
 
         if book_dict['image_qname'] and book_dict['image_qname'] != book_in_db['image_qname']:
-            delete_file_in_s3(urllib.parse.unquote(book_in_db['image_qname']))
+            Storage.delete_file_in_s3(urllib.parse.unquote(book_in_db['image_qname']))
 
         if book_dict['genre']:
             genre_creation_model = GenreCreate(name=book_dict['genre'])
@@ -107,3 +107,4 @@ class BooksCrud(CrudInterface):
         query = update(book_table).where(book_table.c.id == element_id).values(**book_dict)
         await session.execute(query)
         return await cls.get(session, element_id)
+
