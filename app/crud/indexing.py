@@ -15,7 +15,7 @@ def __extract_pdf_text(content: bytes) -> str:
 
 
 def __encode_text_to_vector(text: str) -> list[float]:
-    return _model.encode(text).tolist()
+    return _model.encode(text, normalize_embeddings=True).tolist()
 
 
 async def index_book(book_id: int, genre: str, book_file_path: str):
@@ -54,13 +54,16 @@ async def context_search_books(query: str):
 
 
 async def semantic_search_books(query: str):
-    search_body = {
-        "query": {"script_score": {
+    search_query = {
+        "script_score": {
             "query": {"match_all": {}},
             "script": {
-                "source": "cosineSimilarity(params.query_vector, doc['content_vector']) + 1.0",
+                "source": "dotProduct(params.query_vector, 'content_vector')",
                 "params": {"query_vector": __encode_text_to_vector(query)}
             }
-        }}
+        }
     }
-    return await _es.search(index=elastic_cred.books_index, body=search_body)
+    try:
+        return await _es.search(index=elastic_cred.books_index, query=search_query)
+    except Exception as e:
+        print(f"Error: {e}")

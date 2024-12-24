@@ -14,12 +14,17 @@ class ElasticSettings(BaseSettings):
     model_config = SettingsConfigDict(env_prefix='ELASTIC_', env_file="./config/elastic.env")
     api_port: int
     hostname: str
-    score_board: float = Field(gt=0.0)
+    content_score_board: float = Field(gt=0.0)
+    semantic_score_board: float = Field(gt=0.0)
     books_index: str = "books"
 
     @property
-    def min_score(self):
-        return self.score_board
+    def min_content_score(self):
+        return self.content_score_board
+
+    @property
+    def min_semantic_score(self):
+        return self.semantic_score_board
 
     @property
     def elastic_url(self) -> str:
