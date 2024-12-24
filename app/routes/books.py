@@ -88,5 +88,6 @@ async def delete_book(book_id: int, user_data: User = user_has_permissions(Privi
         await session.commit()
         await Indexing.delete_book(book_id)
         Storage.delete_file_in_s3(urllib.parse.unquote(book['pdf_qname']))
-        Storage.delete_file_in_s3(urllib.parse.unquote(book['image_qname']))
+        if book['image_qname'] is not None and book['image_qname'] != "":
+            Storage.delete_file_in_s3(urllib.parse.unquote(book['image_qname']))
         return book

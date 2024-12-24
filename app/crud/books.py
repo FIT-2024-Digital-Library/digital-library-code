@@ -73,10 +73,6 @@ class BooksCrud(CrudInterface):
         if book:
             query = delete(book_table).where(book_table.c.id == element_id)
             await session.execute(query)
-            await Indexing.delete_book(element_id)
-            Storage.delete_file_in_s3(urllib.parse.unquote(book['pdf_qname']))
-            if book['image_qname'] is not None and book['image_qname'] != "":
-                Storage.delete_file_in_s3(urllib.parse.unquote(book['image_qname']))
         return book
 
     @classmethod

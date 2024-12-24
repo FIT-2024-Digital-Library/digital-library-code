@@ -44,18 +44,18 @@ class Indexing:
         }
         try:
             await _es.index(index=elastic_cred.books_index, id=str(book_id), body=document)
-            print("BOOK-PROCESSING: Finish indexing")
         except Exception as e:
             raise HTTPException(status_code=418, detail=f"Indexation error: {e}")
+        print("BOOK-PROCESSING: Finish indexing")
 
 
     @classmethod
     async def delete_book(cls, book_id: int):
         try:
             await _es.delete(index=elastic_cred.books_index, id=str(book_id))
-            print(f"BOOK-PROCESSING: Successfully deleted book with ID {book_id}")
         except Exception as e:
             raise HTTPException(status_code=418, detail=f"Deletion error: {e}")
+        print(f"BOOK-PROCESSING: Successfully deleted book with ID {book_id}")
 
 
     @classmethod
