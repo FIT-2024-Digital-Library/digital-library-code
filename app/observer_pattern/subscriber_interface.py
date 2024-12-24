@@ -5,5 +5,5 @@ from app.observer_pattern.observable_event import ObservableEvent
 
 class SubscriberInterface:
     @abstractmethod
-    def notify(self, event: ObservableEvent, *args):
+    def notify(self, event: ObservableEvent, data=None):
         pass

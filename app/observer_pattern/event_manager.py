@@ -18,6 +18,7 @@ class EventManager:
         else:
             self.observations[event].remove(subscriber)
 
-    def notify_all(self, event, *args):
+    def notify_all(self, event, data=None):
         if event in self.observations.keys():
-            for subscriber in self[]
+            for subscriber in self.observations[event]:
+                subscriber.notify(event, data)
