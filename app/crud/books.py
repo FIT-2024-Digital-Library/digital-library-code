@@ -84,9 +84,7 @@ async def update_book_in_db(session: AsyncSession, book_id: int, book: BookUpdat
         await index_book(book_id, book_dict['genre'], urllib.parse.unquote(book_dict['pdf_qname']))
 
     if book_dict['image_qname'] and book_dict['image_qname'] != book_in_db['image_qname']:
-        await delete_book(book_id)
         delete_file_in_s3(urllib.parse.unquote(book_in_db['image_qname']))
-        await index_book(book_id, book_dict['genre'], book_dict['image_qname'])
 
     if book_dict['genre']:
         genre_creation_model = GenreCreate(name=book_dict['genre'])
