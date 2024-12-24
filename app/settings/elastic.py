@@ -1,13 +1,8 @@
 from elasticsearch import AsyncElasticsearch
-from sentence_transformers import SentenceTransformer
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 __all__ = ["elastic_cred", "init_elastic_indexing", "delete_elastic_indexing"]
-
-
-_model = SentenceTransformer('all-MiniLM-L6-v2')
-MODEL_VECTOR_SIZE = 384
 
 
 class ElasticSettings(BaseSettings):
@@ -36,8 +31,7 @@ class ElasticSettings(BaseSettings):
             "settings": {"analysis": {"analyzer": {"default": {"type": "standard"}}}},
             "mappings": {
                 "dynamic": "strict", "properties": {
-                    "genre": {"type": "text"}, "content": {"type": "text"},
-                    "content_vector": {"type": "dense_vector", "dims": MODEL_VECTOR_SIZE}
+                    "genre": {"type": "text"}, "content": {"type": "text"}
                 }
             }
         }

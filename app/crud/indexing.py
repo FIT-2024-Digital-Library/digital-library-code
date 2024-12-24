@@ -1,8 +1,13 @@
-import io, pdfplumber
+import re, io, nltk, pdfplumber
 from fastapi import HTTPException
 
 from app.crud.storage import download_file_bytes
-from app.settings.elastic import elastic_cred, _es, _model
+from app.settings.elastic import elastic_cred, _es
+
+
+nltk.download('wordnet')
+nltk.download('stopwords')
+__english_stop_words = set(nltk.corpus.stopwords.words('english'))
 
 
 def __extract_pdf_text(content: bytes) -> str:
@@ -14,15 +19,21 @@ def __extract_pdf_text(content: bytes) -> str:
     return full_text
 
 
-def __encode_text_to_vector(text: str) -> list[float]:
-    return _model.encode(text, normalize_embeddings=True).tolist()
+def __preprocess_text(text, remove_punctuation=True):
+    text = text.replace("\n", " ").replace("\t", " ")
+    text = re.sub(r'\s+', ' ', text)  ## лишние пробелы
+
+    if remove_punctuation:
+        text = re.sub(r'[^\w\s]', '', text)
+
+    text = text.lower()
+    return text
 
 
 async def index_book(book_id: int, genre: str, book_file_path: str):
-    book_text: str = __extract_pdf_text(await download_file_bytes(book_file_path))
     document = {
-        "genre": genre if genre is not None else "", "content": book_text,
-        "content_vector": __encode_text_to_vector(book_text)
+        "genre": genre if genre is not None else "",
+        "content": __preprocess_text(__extract_pdf_text(await download_file_bytes(book_file_path)))
     }
     try:
         await _es.index(index=elastic_cred.books_index, id=str(book_id), body=document)
@@ -40,30 +51,38 @@ async def delete_book(book_id: int):
 
 
 async def context_search_books(query: str):
-    search_body = {
-        "query": {
-            "multi_match": {
-                "query": query,
-                "fields": ["genre^3", "content"],
-                "type": "most_fields",
-                "fuzziness": "AUTO"
-            }
+    search_query = {
+        "multi_match": {
+            "query": __preprocess_text(query),
+            "fields": ["genre", "content"],
+            "type": "most_fields",
+            "operator": "and",
+            "fuzziness": "AUTO"
         }
     }
-    return await _es.search(index=elastic_cred.books_index, body=search_body)
+    return await _es.search(index=elastic_cred.books_index, query=search_query)
+
+
+def __expand_and_filter_query(query: str) -> str:
+    query_words = set([word for word in query.split() if word not in __english_stop_words])
+    new_words = set()
+    for word in query_words:
+        synonyms = nltk.corpus.wordnet.synsets(word)
+        for syn in synonyms:
+            for lemma in syn.lemmas():
+                new_words.add(lemma.name().replace('_', ' '))
+    print(f"BOOK-PROCESSING: Expanded query\n{new_words}")
+    return " ".join(query_words.union(new_words))
 
 
 async def semantic_search_books(query: str):
     search_query = {
-        "script_score": {
-            "query": {"match_all": {}},
-            "script": {
-                "source": "dotProduct(params.query_vector, 'content_vector')",
-                "params": {"query_vector": __encode_text_to_vector(query)}
-            }
+        "multi_match": {
+            "query": __expand_and_filter_query(__preprocess_text(query)),
+            "fields": ["genre^3", "content"],
+            "type": "most_fields",
+            "operator": "or",
+            "fuzziness": "AUTO"
         }
     }
-    try:
-        return await _es.search(index=elastic_cred.books_index, query=search_query)
-    except Exception as e:
-        print(f"Error: {e}")
+    return await _es.search(index=elastic_cred.books_index, query=search_query)

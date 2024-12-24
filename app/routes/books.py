@@ -1,5 +1,4 @@
 import urllib.parse
-from datetime import date
 from typing import Optional, List
 from fastapi import APIRouter, Query, HTTPException, BackgroundTasks
 

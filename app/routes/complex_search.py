@@ -21,5 +21,4 @@ async def semantic_search(query: str):
     results: dict = await semantic_search_books(query)
     if results is None:
         return []
-    return [{"id":book["_id"], "score":book["_score"], "genre":book["_source"]["genre"]}
-            for book in results['hits']['hits'] if book["_score"] >= elastic_cred.min_semantic_score]
+    return [book for book in results['hits']['hits'] if book["_score"] >= elastic_cred.min_semantic_score]
