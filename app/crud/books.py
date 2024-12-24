@@ -73,6 +73,10 @@ class BooksCrud(CrudInterface):
         if book:
             query = delete(book_table).where(book_table.c.id == element_id)
             await session.execute(query)
+            await Indexing.delete_book(element_id)
+            Storage.delete_file_in_s3(urllib.parse.unquote(book['pdf_qname']))
+            if book['image_qname'] is not None and book['image_qname'] != "":
+                Storage.delete_file_in_s3(urllib.parse.unquote(book['image_qname']))
         return book
 
     @classmethod
@@ -87,7 +91,8 @@ class BooksCrud(CrudInterface):
             Storage.delete_file_in_s3(urllib.parse.unquote(book_in_db['pdf_qname']))
             await Indexing.index_book(element_id, book_dict['genre'], urllib.parse.unquote(book_dict['pdf_qname']))
 
-        if book_dict['image_qname'] and book_dict['image_qname'] != book_in_db['image_qname']:
+        if book_dict['image_qname'] and book_dict['image_qname'] != "" and book_dict['image_qname'] != book_in_db[
+            'image_qname']:
             Storage.delete_file_in_s3(urllib.parse.unquote(book_in_db['image_qname']))
 
         if book_dict['genre']:
@@ -107,4 +112,3 @@ class BooksCrud(CrudInterface):
         query = update(book_table).where(book_table.c.id == element_id).values(**book_dict)
         await session.execute(query)
         return await cls.get(session, element_id)
-

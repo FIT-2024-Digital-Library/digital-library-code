@@ -17,6 +17,7 @@ class BookCreate(CamelCaseBaseModel):
     avg_mark: Optional[float] = 0
     marks_count: Optional[int] = 0
 
+
 class BookUpdate(CamelCaseBaseModel):
     theme_id: Optional[int] = None
     title: Optional[str] = None
@@ -33,4 +34,4 @@ class BookUpdate(CamelCaseBaseModel):
 class Book(BookCreate):
     id: int
     author: int
-    genre: int
+    genre: Optional[int]
