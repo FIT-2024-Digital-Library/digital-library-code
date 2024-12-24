@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Optional
 from .base import CamelCaseBaseModel
 
@@ -33,4 +32,4 @@ class BookUpdate(CamelCaseBaseModel):
 class Book(BookCreate):
     id: int
     author: int
-    genre: int
+    genre: Optional[int]
