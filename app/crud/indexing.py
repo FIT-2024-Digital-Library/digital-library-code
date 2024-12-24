@@ -65,14 +65,16 @@ async def context_search_books(query: str):
 
 def __expand_and_filter_query(query: str) -> str:
     query_words = set([word for word in query.split() if word not in __english_stop_words])
-    new_words = set()
+    related_terms = set()
     for word in query_words:
-        synonyms = nltk.corpus.wordnet.synsets(word)
-        for syn in synonyms:
-            for lemma in syn.lemmas():
-                new_words.add(lemma.name().replace('_', ' '))
-    print(f"BOOK-PROCESSING: Expanded query\n{new_words}")
-    return " ".join(query_words.union(new_words))
+        for synset in nltk.corpus.wordnet.synsets(word):
+            for lemma in synset.lemmas():
+                related_terms.add(lemma.name().replace('_', ' '))
+            for hypernym in synset.hypernyms():
+                for hypernym_term in hypernym.lemma_names():
+                    related_terms.add(hypernym_term.replace('_', ' '))
+    print(f"BOOK-PROCESSING: Expanded query\n{related_terms}")
+    return " ".join(query_words.union(related_terms))
 
 
 async def semantic_search_books(query: str):
