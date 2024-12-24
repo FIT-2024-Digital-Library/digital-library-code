@@ -1,12 +1,10 @@
 from typing import List, Annotated
 from fastapi import APIRouter, Query, HTTPException, Depends
 
-from app.crud.reviews import get_review_by_id, create_review_in_db, update_review_in_db, delete_review_in_db, \
-    get_reviews_in_db, get_average_mark_in_db, get_reviews_count_in_db
+from app.crud.reviews import ReviewsCrud
 from app.schemas import User, ReviewsFiltersScheme, Review, ReviewCreate, ReviewUpdate
 from app.settings import async_session_maker
 from app.utils.auth import get_current_user
-
 
 router = APIRouter(
     prefix='/reviews',
@@ -18,7 +16,7 @@ router = APIRouter(
 async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]) -> List[int]:
     async with async_session_maker() as session:
         try:
-            return await get_reviews_in_db(session, filters)
+            return await ReviewsCrud.get_multiple(session, filters)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
@@ -26,7 +24,7 @@ async def get_reviews(filters: Annotated[ReviewsFiltersScheme, Query()]) -> List
 @router.get('/{review_id}', response_model=Review, summary='Returns review')
 async def get_review(review_id: int) -> Review:
     async with async_session_maker() as session:
-        result = await get_review_by_id(session, review_id)
+        result = await ReviewsCrud.get(session, review_id)
         if result is None:
             raise HTTPException(status_code=404, detail="Review not found")
         return result
@@ -35,7 +33,7 @@ async def get_review(review_id: int) -> Review:
 @router.get('/average/{book_id}', response_model=float, summary='Returns average mark for book')
 async def get_average_mark(book_id: int) -> float:
     async with async_session_maker() as session:
-        avg_mark = await get_average_mark_in_db(session, book_id)
+        avg_mark = await ReviewsCrud.get_average_mark(session, book_id)
         if avg_mark is None:
             raise HTTPException(status_code=404, detail="Book not found")
         return avg_mark
@@ -44,7 +42,7 @@ async def get_average_mark(book_id: int) -> float:
 @router.get('/count/{book_id}', response_model=int, summary='Returns marks count for book')
 async def get_marks_count(book_id: int) -> int:
     async with async_session_maker() as session:
-        reviews_count = await get_reviews_count_in_db(session, book_id)
+        reviews_count = await ReviewsCrud.get_reviews_count(session, book_id)
         if reviews_count is None:
             raise HTTPException(status_code=404, detail="Book not found")
         return reviews_count
@@ -55,7 +53,7 @@ async def get_marks_count(book_id: int) -> int:
 async def create_review(review: ReviewCreate, user_creds: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
-            return await create_review_in_db(session, user_creds.id, review)
+            return await ReviewsCrud.create(session, review, user_creds.id)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
@@ -64,7 +62,7 @@ async def create_review(review: ReviewCreate, user_creds: User = Depends(get_cur
 async def update_review(review_id: int, review: ReviewUpdate, user_creds: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
-            return await update_review_in_db(session, review_id, user_creds.id, review)
+            return await ReviewsCrud.update(session, review_id, user_creds.id, review)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
 
@@ -74,6 +72,6 @@ async def update_review(review_id: int, review: ReviewUpdate, user_creds: User =
 async def delete_review(review_id: int, user_creds: User = Depends(get_current_user)) -> Review:
     async with async_session_maker() as session:
         try:
-            return await delete_review_in_db(session, review_id, user_creds.id)
+            return await ReviewsCrud.delete(session, review_id, user_creds.id)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))

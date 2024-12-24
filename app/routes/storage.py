@@ -4,9 +4,7 @@ from fastapi.responses import StreamingResponse, Response
 
 from app.schemas import FileUploadedScheme, User, PrivilegesEnum
 from app.utils.auth import user_has_permissions
-from app.crud.storage import is_file_exists, upload_file_to_s3, file_stream_generator, \
-    list_files_in_s3, delete_file_in_s3
-
+from app.crud.storage import Storage
 
 router = APIRouter(
     prefix='/storage',
@@ -19,16 +17,16 @@ def upload_file(
         file: UploadFile = File(...),
         user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)
 ):
-    book_object = upload_file_to_s3(file)
+    book_object = Storage.upload_file_to_s3(file)
     return FileUploadedScheme(qname=urllib.parse.quote(book_object.object_name))
 
 
 @router.get("/download/{filename}", response_class=StreamingResponse)
 def download_file(filename: str):
-    if not is_file_exists(filename):
+    if not Storage.is_file_exists(filename):
         raise HTTPException(404, "File not found")
     return StreamingResponse(
-        file_stream_generator(f"{filename}"),
+        Storage.file_stream_generator(f"{filename}"),
         media_type="application/octet-stream",
         headers={"Content-Disposition": f"attachment; filename={urllib.parse.quote(filename)}"}
     )
@@ -38,13 +36,13 @@ def download_file(filename: str):
 def list_files():
     return [
         FileUploadedScheme(qname=urllib.parse.quote(obj.object_name))
-        for obj in list_files_in_s3()
+        for obj in Storage.list_files_in_s3()
     ]
 
 
 @router.delete("{filename}", status_code=200, summary="Deletes file. Privileged users only.")
 def delete_file(filename: str, user_data: User = user_has_permissions(PrivilegesEnum.MODERATOR)):
-    if not is_file_exists(filename):
+    if not Storage.is_file_exists(filename):
         raise HTTPException(404, "File not found")
-    delete_file_in_s3(filename)
+    Storage.delete_file_in_s3(filename)
     return Response(status_code=200)
