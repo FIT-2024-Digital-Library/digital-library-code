@@ -9,17 +9,6 @@ router = APIRouter(
 )
 
 
-"""
-from sentence_transformers import SentenceTransformer
-
-# Загрузка модели
-__model = SentenceTransformer('all-MiniLM-L6-v2')  # Модель с размером вектора 384
-
-def encode_text_to_vector(text: str):
-    return __model.encode(text).tolist()  # Преобразуем в список для сохранения
-"""
-
-
 @router.get("/context")#, response_model=list[int])
 async def context_search(query: str):# -> list[int]:
     results: dict = await context_search_books(query)
