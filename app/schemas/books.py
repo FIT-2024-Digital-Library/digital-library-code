@@ -1,20 +1,7 @@
-from datetime import date
 from typing import Optional
 from .base import CamelCaseBaseModel
 
-__all__ = ["Book", "BookCreate"]
-
-
-class Book(CamelCaseBaseModel):
-    id: int
-    theme_id: int
-    title: str
-    author: int
-    genre: Optional[int] = None
-    published_date: Optional[date] = None
-    description: Optional[str] = None
-    image_url: Optional[str] = None
-    pdf_url: str
+__all__ = ["Book", "BookCreate", "BookUpdate"]
 
 
 class BookCreate(CamelCaseBaseModel):
@@ -22,7 +9,28 @@ class BookCreate(CamelCaseBaseModel):
     title: str
     author: str
     genre: Optional[str] = None
-    published_date: Optional[date] = None
+    published_date: Optional[int] = None
     description: Optional[str] = None
-    image_url: Optional[str] = None
-    pdf_url: str
+    image_qname: str = ""
+    pdf_qname: str
+    avg_mark: Optional[float] = 0
+    marks_count: Optional[int] = 0
+
+
+class BookUpdate(CamelCaseBaseModel):
+    theme_id: Optional[int] = None
+    title: Optional[str] = None
+    author: Optional[str] = None
+    genre: Optional[str] = None
+    published_date: Optional[int] = None
+    description: Optional[str] = None
+    image_qname: Optional[str] = None
+    pdf_qname: Optional[str] = None
+    avg_mark: Optional[float] = None
+    marks_count: Optional[int] = None
+
+
+class Book(BookCreate):
+    id: int
+    author: int
+    genre: Optional[int]
