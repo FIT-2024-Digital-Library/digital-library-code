@@ -1,5 +1,6 @@
-import re, io, nltk, pdfplumber
+import re, io, nltk, numpy, pdfplumber
 from fastapi import HTTPException
+from sentence_transformers import SentenceTransformer
 
 from app.crud.storage import Storage
 from app.settings.elastic import elastic_cred, _es
@@ -10,7 +11,16 @@ nltk.download('stopwords')
 
 
 class Indexing:
+    __model = SentenceTransformer('all-MiniLM-L6-v2')  ## модель для фильтрации синонимов
     __english_stop_words = set(nltk.corpus.stopwords.words('english'))
+    __MIN_SEMNT = 0.5
+
+    @classmethod
+    def __compare_queries_semantic(cls, query1: str, query2: str) -> float:
+        vector1 = cls.__model.encode(query1, normalize_embeddings=True)
+        vector2 = cls.__model.encode(query2, normalize_embeddings=True)
+        return numpy.dot(vector1, vector2)
+
 
     @classmethod
     def __extract_pdf_text(cls, content: bytes) -> str:
@@ -44,18 +54,18 @@ class Indexing:
         }
         try:
             await _es.index(index=elastic_cred.books_index, id=str(book_id), body=document)
-            print("BOOK-PROCESSING: Finish indexing")
         except Exception as e:
             raise HTTPException(status_code=418, detail=f"Indexation error: {e}")
+        print("BOOK-PROCESSING: Finish indexing")
 
 
     @classmethod
     async def delete_book(cls, book_id: int):
         try:
             await _es.delete(index=elastic_cred.books_index, id=str(book_id))
-            print(f"BOOK-PROCESSING: Successfully deleted book with ID {book_id}")
         except Exception as e:
             raise HTTPException(status_code=418, detail=f"Deletion error: {e}")
+        print(f"BOOK-PROCESSING: Successfully deleted book with ID {book_id}")
 
 
     @classmethod
@@ -79,10 +89,14 @@ class Indexing:
         for word in query_words:
             for synset in nltk.corpus.wordnet.synsets(word):
                 for lemma in synset.lemmas():
-                    related_terms.add(lemma.name().replace('_', ' '))
+                    lemma = lemma.name().replace('_', ' ')
+                    if cls.__compare_queries_semantic(query, lemma) >= cls.__MIN_SEMNT:
+                        related_terms.add(lemma)
                 for hypernym in synset.hypernyms():
                     for hypernym_term in hypernym.lemma_names():
-                        related_terms.add(hypernym_term.replace('_', ' '))
+                        hypernym_term = hypernym_term.replace('_', ' ')
+                        if cls.__compare_queries_semantic(query, hypernym_term) >= cls.__MIN_SEMNT:
+                            related_terms.add(hypernym_term)
         print(f"BOOK-PROCESSING: Expanded query\n{related_terms}")
         return " ".join(query_words.union(related_terms))
 
